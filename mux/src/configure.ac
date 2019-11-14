@@ -110,12 +110,74 @@ AC_ARG_ENABLE(
     else
       INLINESQL="-DINLINESQL"
       AC_MSG_RESULT(yes)
+      AC_MSG_CHECKING(for location of SQL header files)
+      AC_ARG_WITH(
+      [mysql-include],
+      AS_HELP_STRING([--with-mysql-include=PATH],[set the include path for SQL header files]),
+      [
+         SQL_INCLUDE="-I$withval"
+         AC_MSG_RESULT($withval)
+      ],
+      [
+         if test -d "/usr/include/mysql"; then
+            bestguessval="/usr/include/mysql"
+            SQL_INCLUDE="-I$bestguessval"
+            AC_MSG_RESULT($bestguessval)
+         elif test -d "/usr/local/include/mysql"; then
+            bestguessval="/usr/local/include/mysql"
+            SQL_INCLUDE="-I$bestguessval"
+            AC_MSG_RESULT($bestguessval)
+         else
+            AC_MSG_RESULT(Unknown. Use --with-mysql-include with path)
+         fi
+      ])
+      AC_SUBST(SQL_INCLUDE)
+
+      AC_MSG_CHECKING(for location of SQL library files)
+      AC_ARG_WITH(
+      [mysql-libs],
+      AS_HELP_STRING([--with-mysql-libs=PATH],[set the library path for SQL library files]),
+      [
+         SQL_LIBPATH="-L$withval"
+         AC_MSG_RESULT($withval)
+      ],
+      [
+         if test -d "/usr/lib/mysql"; then
+            bestguessval="/usr/lib/mysql"
+            SQL_LIBPATH="-L$bestguessval"
+            AC_MSG_RESULT($bestguessval)
+         elif test -d "/usr/local/lib/mysql"; then
+            bestguessval="/usr/local/lib/mysql"
+            SQL_LIBPATH="-L$bestguessval"
+            AC_MSG_RESULT($bestguessval)
+         else
+            AC_MSG_RESULT(Unknown. Use --with-mysql-libs with path)
+         fi
+      ])
+      AC_SUBST(SQL_LIBPATH)
     fi
   ],
   [
     AC_MSG_RESULT(no)
   ])
 AC_SUBST(INLINESQL)
+
+AC_MSG_CHECKING(wheter to define a release level)
+AC_ARG_ENABLE(
+  [release-level],
+  AS_HELP_STRING([--enable-release-level=<string>],[define a specific release-level (default is blank)]),
+  [
+    if test "x$enableval" = "xno"; then
+      AC_MSG_RESULT(no)
+    else
+      RELEASE_LEVEL="-D$enableval"
+      AC_MSG_RESULT(yes)
+    fi
+  ],
+  [
+    AC_MSG_RESULT(no)
+  ])
+AC_SUBST(RELEASE_LEVEL)
 
 AC_MSG_CHECKING(whether to perform expensive self-checking)
 AC_ARG_ENABLE(
@@ -133,52 +195,6 @@ AC_ARG_ENABLE(
     AC_MSG_RESULT(no)
   ])
 AC_SUBST(SELFCHECK)
-
-AC_MSG_CHECKING(for location of SQL header files)
-AC_ARG_WITH(
-  [mysql-include],
-  AS_HELP_STRING([--with-mysql-include=PATH],[set the include path for SQL header files]),
-  [
-      SQL_INCLUDE="-I$withval"
-      AC_MSG_RESULT($withval)
-  ],
-  [
-      if test -d "/usr/include/mysql"; then
-          bestguessval="/usr/include/mysql"
-          SQL_INCLUDE="-I$bestguessval"
-          AC_MSG_RESULT($bestguessval)
-      elif test -d "/usr/local/include/mysql"; then
-          bestguessval="/usr/local/include/mysql"
-          SQL_INCLUDE="-I$bestguessval"
-          AC_MSG_RESULT($bestguessval)
-      else
-          AC_MSG_RESULT(Unknown. Use --with-mysql-include with path)
-      fi
-  ])
-AC_SUBST(SQL_INCLUDE)
-
-AC_MSG_CHECKING(for location of SQL library files)
-AC_ARG_WITH(
-  [mysql-libs],
-  AS_HELP_STRING([--with-mysql-libs=PATH],[set the library path for SQL library files]),
-  [
-      SQL_LIBPATH="-L$withval"
-      AC_MSG_RESULT($withval)
-  ],
-  [
-      if test -d "/usr/lib/mysql"; then
-          bestguessval="/usr/lib/mysql"
-          SQL_LIBPATH="-L$bestguessval"
-          AC_MSG_RESULT($bestguessval)
-      elif test -d "/usr/local/lib/mysql"; then
-          bestguessval="/usr/local/lib/mysql"
-          SQL_LIBPATH="-L$bestguessval"
-          AC_MSG_RESULT($bestguessval)
-      else
-          AC_MSG_RESULT(Unknown. Use --with-mysql-libs with path)
-      fi
-  ])
-AC_SUBST(SQL_LIBPATH)
 
 AC_MSG_CHECKING(whether to enable SSL support)
 AC_ARG_ENABLE(
@@ -214,6 +230,96 @@ AC_ARG_ENABLE(
     AC_MSG_RESULT(no)
   ])
 AC_SUBST(DEPRECATED)
+
+AC_MSG_CHECKING(whether to use stunnel for TLS)
+AC_ARG_ENABLE(
+  [stunnel],
+  AS_HELP_STRING([--enable-stunnel],[enable stunnel for TLS connections (default is NO)]),
+  [
+    if test "x$enableval" = "xno"; then
+      AC_MSG_RESULT(no)
+    else
+      CUST_STRING="-DCUST_STRING=\"\\\"CUST\\\"\""
+      STUNNEL="-DSTUNNEL"
+      AC_MSG_RESULT(yes)
+    fi
+  ],
+  [
+    AC_MSG_RESULT(no)
+  ])
+AC_SUBST(STUNNEL)
+
+AC_MSG_CHECKING(whether to use 16k buffers insetad of 8k)
+AC_ARG_ENABLE(
+  [bigbuff],
+  AS_HELP_STRING([--enable-bigbuff],[enable 16k buffers instead of 8k (default is NO)]),
+  [
+    if test "x$enableval" = "xno"; then
+      AC_MSG_RESULT(no)
+    else
+      CUST_STRING="-DCUST_STRING=\"\\\"CUST\\\"\""
+      BIGBUFF="-DBIGBUFF"
+      AC_MSG_RESULT(yes)
+    fi
+  ],
+  [
+    AC_MSG_RESULT(no)
+  ])
+AC_SUBST(BIGBUFF)
+
+AC_MSG_CHECKING(whether to use 32k buffers insetad of 8k)
+AC_ARG_ENABLE(
+  [hugebuff],
+  AS_HELP_STRING([--enable-hugebuff],[enable 32k buffers instead of 8k (default is NO) Hugebuff takes precedence over bigbuff if both are set]),
+  [
+    if test "x$enableval" = "xno"; then
+      AC_MSG_RESULT(no)
+    else
+      CUST_STRING="-DCUST_STRING=\"\\\"CUST\\\"\""
+      BIGBUFF=""
+      HUGEBUFF="-DHUGEBUFF"
+      AC_MSG_RESULT(yes)
+    fi
+  ],
+  [
+    AC_MSG_RESULT(no)
+  ])
+AC_SUBST(HUGEBUFF)
+
+AC_MSG_CHECKING(whether to use friendly messages when SIGUSR2 is received)
+AC_ARG_ENABLE(
+  [friendly-sigusr2],
+  AS_HELP_STRING([--enable-friendly-sigusr2],[use friendlier messages when SIGUSR2 is received (default is NO)]),
+  [
+    if test "x$enableval" = "xno"; then
+      AC_MSG_RESULT(no)
+    else
+      CUST_STRING="-DCUST_STRING=\"\\\"CUST\\\"\""
+      FRIENDLY_SIGUSR2="-DFRIENDLY_SIGUSR2"
+      AC_MSG_RESULT(yes)
+    fi
+  ],
+  [
+    AC_MSG_RESULT(no)
+  ])
+AC_SUBST(FRIENDLY_SIGUSR2)
+
+AC_MSG_CHECKING(whether to use a custom version string)
+AC_ARG_ENABLE(
+  [custom-version],
+  AS_HELP_STRING([--enable-custom-version=<string>],[use a custom string in versions (default is blank)]),
+  [
+    if test "x$enableval" = "xno"; then
+      AC_MSG_RESULT(no)
+    else
+      CUST_STRING="-DCUST_STRING=\"\\\"$enableval\\\"\""
+      AC_MSG_RESULT(yes)
+    fi
+  ],
+  [
+    AC_MSG_RESULT(no)
+  ])
+AC_SUBST(CUST_STRING)
 
 # Checks for programs.
 #

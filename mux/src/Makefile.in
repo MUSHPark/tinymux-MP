@@ -84,6 +84,32 @@ SSL               = @SSL@
 #
 DEPRECATED = @DEPRECATED@
 
+# Define a specific release level
+#
+RELEASE_LEVEL = @RELEASE_LEVEL@
+
+# Use stunnel for secure connections
+#
+STUNNEL = @STUNNEL@
+
+# Use 16K buffers instead of 8k. Some games need larger buffer sizes
+#
+BIGBUFF = @BIGBUFF@
+
+# Use 32K buffers instead of 8k. Some games need much larger buffer sizes
+#
+HUGEBUFF = @HUGEBUFF@
+
+# Use friendly messages when SIGUSR2 is received, instead of the stock one
+# that can be somewhat frightening. Also puts in a message when the flat
+# file dump that was triggered is over
+#
+FRIENDLY_SIGUSR2 = @FRIENDLY_SIGUSR2@
+
+# Use a custom string in versions
+#
+CUST_STRING = @CUST_STRING@
+
 # Potentially expensive internal self-checking of the server. This does not
 # increase softcode validation or validation of the operating environment.
 # It's useful primarily during development while running test cases.
@@ -164,7 +190,8 @@ DEFS =
 AUX_SRC = unsplit.cpp
 ALLCXXFLAGS = $(CXXFLAGS) $(OPTIM) $(DEFS) $(MEMORY_BASED) $(WOD_REALMS) \
     $(REALITY_LVLS) $(STUB_SLAVE) $(FIRANMUX) $(DEPRECATED) $(SELFCHECK) \
-    $(INLINESQL) $(SQL_INCLUDE) $(SSL)
+    $(INLINESQL) $(SQL_INCLUDE) $(SSL) $(RELEASE_LEVEL) $(STUNNEL) \
+	$(BIGBUFF) $(HUGEBUFF) $(FRIENDLY_SIGUSR2) $(CUST_STRING)
 
 # Compiliation source files.
 #
@@ -217,7 +244,7 @@ depend: $(ALLSRC) unsplit
 	mv .depend~ .depend
 
 realclean:
-	-rm -f *.o a.out core gmon.out dbconvert config.status config.log netmux netmux~ @DYNAMICLIB_TARGET@ @DYNAMICLIB_TARGET@~ slave @STUBSLAVE_TARGET@ Makefile
+	-rm -f *.o a.out core gmon.out dbconvert config.status config.log netmux netmux~ @DYNAMICLIB_TARGET@ @DYNAMICLIB_TARGET@~ slave @STUBSLAVE_TARGET@ Makefile modules/*.so tools/announce
 
 clean:
 	-rm -f *.o a.out core gmon.out warn.log config.status config.log netmux~ @DYNAMICLIB_TARGET@~

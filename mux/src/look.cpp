@@ -603,7 +603,7 @@ static void look_contents(dbref player, dbref loc, const UTF8 *contents_name, in
     // Check to see if he can see the location.
     //
 #ifdef REALITY_LVLS
-     bool can_see_loc = ( !Dark(loc) && IsReal(player, loc)
+     bool can_see_loc = ( (!Dark(loc) && IsReal(player, loc))
 #else
      bool can_see_loc = (  !Dark(loc)
 #endif // REALITY_LVLS

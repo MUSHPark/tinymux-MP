@@ -14,6 +14,7 @@
 #include "externs.h"
 
 #include <time.h>
+#include <string.h>
 
 #include "attrs.h"
 #include "command.h"
@@ -38,6 +39,62 @@ NAMETAB default_charset_nametab[] =
     {T("iso8859-2"),       9,       0,     CHARSET_LATIN2},
     {(UTF8 *) NULL,        0,       0,     0}
 };
+
+#ifdef STUNNEL
+// STUNNEL Support function
+const char *
+addrout(struct in_addr a)
+{
+/*  extern char *inet_ntoa(); */
+    char *retval;
+    char *logbuff;
+    struct hostent *he;
+
+    if (mudconf.use_hostname) {
+        /* check the nodns_site list */
+        he = gethostbyaddr((char *) &a.s_addr, sizeof(a.s_addr), AF_INET);
+        if (he) {
+            retval = he->h_name;
+            return(retval); /* #3 */
+        } else {
+            retval = inet_ntoa(a);
+            return(retval); /* 3 */
+        }
+    }
+    retval = inet_ntoa(a);
+    return(retval); /* 3 */
+}
+
+int lookup(char *host, char *data, int i_cnt, int *i_retvar)
+{
+  char *parse, *parse_max, s_buff[MBUF_SIZE], *tstrtokr;
+  int i_parse, i_chk;
+
+  memset(s_buff, 0, sizeof(s_buff));
+  mux_strncpy((UTF8*)s_buff,(UTF8*)host,(MBUF_SIZE-1));
+  parse = strtok_r(data,",/\t ", &tstrtokr);
+  i_chk = -1;
+  while (parse) {
+    i_parse = 0;
+    i_chk = -1;
+    if ( (i_cnt != -2) && ((parse_max = strchr(parse, '|')) != NULL) ) {
+       *parse_max = '\0';
+       i_parse = 1;
+       i_chk = atoi(parse_max+1);
+    }
+    if ( quick_wild((const UTF8*)parse, (const UTF8*)s_buff) && ((i_cnt < 0) || (i_chk == -1) || (i_cnt >= i_chk)) )
+      break;
+    if ( i_parse )
+       *parse_max = '|';
+    parse = strtok_r(NULL,",/\t ", &tstrtokr);
+  }
+  *i_retvar = i_chk;
+  if (parse)
+    return 1;
+  else
+   return 0;
+}
+#endif // STUNNEL
 
 /* ---------------------------------------------------------------------------
  * make_portlist: Make a list of ports for PORTS().
@@ -1166,7 +1223,11 @@ static void announce_connect(dbref player, DESC *d)
 
     UTF8 host_address[MBUF_SIZE];
     d->address.ntop(host_address, sizeof(host_address));
+#ifdef STUNNEL
+    record_login(player, true, time_str, d->addr, d->username, host_address, d);
+#else
     record_login(player, true, time_str, d->addr, d->username, host_address);
+#endif // STUNNEL
     if (mudconf.have_mailer)
     {
         check_mail(player, 0, false);
@@ -1858,6 +1919,12 @@ static void dump_users(DESC *e, const UTF8 *match, int key)
                 }
                 if (d->flags & DS_CONNECTED)
                 {
+#ifdef STUNNEL
+                    if (d->flags & DS_SSL) 
+                    {
+                        safe_copy_chr_ascii('$', flist, &fp, sizeof(flist)-1);
+                    }
+#endif // STUNNEL
                     if (Hideout(d->player))
                     {
                         safe_copy_chr_ascii('U', flist, &fp, sizeof(flist)-1);
@@ -1888,18 +1955,32 @@ static void dump_users(DESC *e, const UTF8 *match, int key)
                 {
                     safe_copy_chr_ascii('F', slist, &sp, sizeof(slist)-1);
                 }
-                if (host_info & HI_REGISTER)
+#ifdef STUNNEL
+                if ( (host_info & HI_REGISTER) || (d->flags & DS_REGISTER) )
                 {
                     safe_copy_chr_ascii('R', slist, &sp, sizeof(slist)-1);
                 }
+#else
+                if ( (host_info & HI_REGISTER) )
+                {
+                    safe_copy_chr_ascii('R', slist, &sp, sizeof(slist)-1);
+                }
+#endif // STUNNEL
                 if (host_info & HI_SUSPECT)
                 {
                     safe_copy_chr_ascii('+', slist, &sp, sizeof(slist)-1);
                 }
-                if (host_info & HI_NOGUEST)
+#ifdef STUNNEL
+                if ( (host_info & HI_NOGUEST) || (d->flags & DS_NOGUEST) )
                 {
                     safe_copy_chr_ascii('G', slist, &sp, sizeof(slist)-1);
                 }
+#else
+                if ( (host_info & HI_NOGUEST) )
+                {
+                    safe_copy_chr_ascii('G', slist, &sp, sizeof(slist)-1);
+                }
+#endif // STUNNEL
             }
             else if (  (e->flags & DS_CONNECTED)
                     && (d->flags & DS_CONNECTED)
@@ -2342,7 +2423,8 @@ static bool check_connect(DESC *d, UTF8 *msg)
     {
         if (string_prefix(user, mudconf.guest_prefix))
         {
-            if (host_info & HI_NOGUEST)
+#ifdef STUNNEL
+            if ( (host_info & HI_NOGUEST) || (d->flags & DS_NOGUEST) )
             {
                 // Someone from an IP with guest restrictions is
                 // trying to use a guest account. Give them the blurb
@@ -2358,6 +2440,24 @@ static bool check_connect(DESC *d, UTF8 *msg)
                     command, user, password, cmdsave);
                 return false;
             }
+#else
+            if ( (host_info & HI_NOGUEST) )
+            {
+                // Someone from an IP with guest restrictions is
+                // trying to use a guest account. Give them the blurb
+                // most likely to have instructions about requesting a
+                // character by other means and then fail this
+                // connection.
+                //
+                // The guest 'power' is handled separately further
+                // down.
+                //
+                failconn(T("CONN"), T("Connect"), T("Guest Site Forbidden"), d,
+                    R_GAMEDOWN, NOTHING, FC_CONN_REG, mudconf.downmotd_msg,
+                    command, user, password, cmdsave);
+                return false;
+            }
+#endif // STUNNEL
 
             if (mudconf.control_flags & CF_LOGIN)
             {
@@ -2404,7 +2504,11 @@ static bool check_connect(DESC *d, UTF8 *msg)
 
         UTF8 host_address[MBUF_SIZE];
         d->address.ntop(host_address, sizeof(host_address));
+#ifdef STUNNEL
+        player = connect_player(user, password, d->addr, d->username, host_address, d);
+#else
         player = connect_player(user, password, d->addr, d->username, host_address);
+#endif // STUNNEL
         if (  player == NOTHING
            || (!isGuest && Guest.CheckGuest(player)))
         {
@@ -2453,8 +2557,9 @@ static bool check_connect(DESC *d, UTF8 *msg)
             // different from @newpassword'ing them. Oh well. We are just
             // following orders. ;)
             //
+#ifdef STUNNEL
             if (  Guest(player)
-               && (host_info & HI_NOGUEST))
+               && ((host_info & HI_NOGUEST) || (d->flags & DS_NOGUEST)) )
             {
                 failconn(T("CON"), T("Connect"), T("Guest Site Forbidden"), d,
                     R_GAMEDOWN, player, FC_CONN_SITE,
@@ -2462,6 +2567,17 @@ static bool check_connect(DESC *d, UTF8 *msg)
                     cmdsave);
                 return false;
             }
+#else
+            if (  Guest(player)
+               && (host_info & HI_NOGUEST) )
+            {
+                failconn(T("CON"), T("Connect"), T("Guest Site Forbidden"), d,
+                    R_GAMEDOWN, player, FC_CONN_SITE,
+                    mudconf.downmotd_msg, command, user, password,
+                    cmdsave);
+                return false;
+            }
+#endif
 
             // Logins are enabled, or wiz or god.
             //
@@ -2587,7 +2703,8 @@ static bool check_connect(DESC *d, UTF8 *msg)
                 cmdsave);
             return false;
         }
-        if (host_info & HI_REGISTER)
+#ifdef STUNNEL
+        if ( (host_info & HI_REGISTER) || (d->flags & DS_REGISTER) )
         {
             fcache_dump(d, FC_CREA_REG);
         }
@@ -2635,6 +2752,56 @@ static bool check_connect(DESC *d, UTF8 *msg)
                 }
             }
         }
+#else
+        if ( (host_info & HI_REGISTER) )
+        {
+            fcache_dump(d, FC_CREA_REG);
+        }
+        else
+        {
+            const UTF8 *pmsg;
+            player = create_player(user, password, NOTHING, false, &pmsg);
+            if (player == NOTHING)
+            {
+                queue_write(d, pmsg);
+                queue_write(d, T("\r\n"));
+                STARTLOG(LOG_SECURITY | LOG_PCREATES, "CON", "BAD");
+                buff = alloc_lbuf("check_conn.LOG.badcrea");
+                mux_sprintf(buff, LBUF_SIZE, T("[%u/%s] Create of \xE2\x80\x98%s\xE2\x80\x99 failed"), d->descriptor, d->addr, user);
+                log_text(buff);
+                free_lbuf(buff);
+                ENDLOG;
+            }
+            else
+            {
+                AddToPublicChannel(player);
+                STARTLOG(LOG_LOGIN | LOG_PCREATES, "CON", "CREA");
+                buff = alloc_mbuf("check_conn.LOG.create");
+                mux_sprintf(buff, MBUF_SIZE, T("[%u/%s] Created "), d->descriptor, d->addr);
+                log_text(buff);
+                log_name(player);
+                free_mbuf(buff);
+                ENDLOG;
+                move_object(player, mudconf.start_room);
+                d->flags |= DS_CONNECTED;
+                d->connected_at.GetUTC();
+                d->player = player;
+                fcache_dump(d, FC_CREA_NEW);
+                announce_connect(player, d);
+
+                // Since it is on the create call, assume connection count
+                // is 0 and indicate the connect is a new character.
+                //
+                local_connect(player, 1, 0);
+                ServerEventsSinkNode *pNode = g_pServerEventsSinkListHead;
+                while (NULL != pNode)
+                {
+                    pNode->pSink->connect(player, 1, 0);
+                    pNode = pNode->pNext;
+                }
+            }
+        }
+#endif // STUNNEL
     }
     else
     {
@@ -2657,6 +2824,12 @@ static bool check_connect(DESC *d, UTF8 *msg)
 
 static void do_logged_out_internal(DESC *d, int key, const UTF8 *arg)
 {
+#ifdef STUNNEL
+    UTF8 *buff;
+    dbref aowner; 
+    int aflags;
+#endif // STUNNEL
+
     switch (key)
     {
     case CMD_QUIT:
@@ -2666,7 +2839,19 @@ static void do_logged_out_internal(DESC *d, int key, const UTF8 *arg)
 
     case CMD_LOGOUT:
 
+#ifdef STUNNEL
+        buff = NULL;
+        if ( d->player != NOTHING ) {
+           buff = atr_get("cmd_logout_check", d->player, A_LASTIP, &aowner, &aflags);
+        }
+#endif // STUNNEL
         shutdownsock(d, R_LOGOUT);
+#ifdef STUNNEL
+        if ( buff && *buff ) {
+           mux_strncpy((UTF8*)d->doing, (UTF8*)buff, sizeof(d->doing) - 1);
+        }
+        free_lbuf(buff);
+#endif // STUNNEL
         break;
 
     case CMD_WHO:
@@ -2726,8 +2911,26 @@ static void do_logged_out_internal(DESC *d, int key, const UTF8 *arg)
 void do_command(DESC *d, UTF8 *command)
 {
     const UTF8 *cmdsave = mudstate.debug_cmd;
+#ifdef STUNNEL
+    static char s_buff[200], s_buff2[200], s_command[LBUF_SIZE], *s_arg;
+    char s_sitetmp[LBUF_SIZE], *addroutbuf = NULL;
+    int i_valid, aflags;
+    struct sockaddr_in p_sock;
+    struct in_addr p_addr;
+    MUX_SOCKADDR mp_addr;
+#ifdef SOCKLEN_T_DCL
+    socklen_t addr_len;
+#else // SOCKLEN_T_DCL
+    int addr_len;
+#endif // SOCKLEN_T_DCL
+    DESC *nd;
+#endif // STUNNEL
+
     mudstate.debug_cmd = T("< do_command >");
 
+#ifdef STUNNEL
+    memset(s_buff, '\0', 200);
+#endif // STUNNEL
     if (d->flags & DS_CONNECTED)
     {
         // Normal logged-in command processing.
@@ -2805,6 +3008,10 @@ void do_command(DESC *d, UTF8 *command)
     // Split off the command from the arguments.
     //
     size_t iArg = 0;
+#ifdef STUNNEL
+    memset(s_command, '\0', sizeof(s_command));
+    mux_strncpy((UTF8*)s_command, (UTF8*)command, sizeof(s_command) - 1);
+#endif // STUNNEL
     UTF8* cmd_argument = command;
     while (  '\0' != command[iArg]
           && !mux_isspace(command[iArg]))
@@ -2812,7 +3019,235 @@ void do_command(DESC *d, UTF8 *command)
         iArg++;
         cmd_argument++;
     }
+#ifdef STUNNEL
+    s_command[iArg] = '\0';
+    s_arg = s_command + iArg + 1;
 
+    // Let's do the SSL hackjob here
+    if ( !d->player && *s_command && *s_arg && !mudconf.sconnect_reip && *(mudconf.sconnect_cmd) &&
+         !strcmp((char *)mudconf.sconnect_cmd, (char *)s_command) ) {
+       addroutbuf = (char *) addrout(d->address.sairo()->sin_addr);
+       queue_string(d, T("SSL attempt to negotiate without SSL enabled."));
+       queue_write_LEN(d, T("\r\n"), 2);
+       sprintf(s_buff, "%.50s -> %.50s {%s} ", addroutbuf, s_arg, s_arg);
+       STARTLOG(LOG_ALWAYS, "NET", "SSL");
+          log_text(T("[DISABLED] "));
+          log_text((UTF8*)s_buff);
+       ENDLOG
+       sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [SSL DISABLED]", d->descriptor, addroutbuf, s_arg, s_arg);
+       DESC_ITER_CONN(nd)
+       {
+           if (SiteMon(nd->player))
+           {
+               queue_string(nd, (UTF8*)s_buff);
+               queue_write_LEN(nd, T("\r\n"), 2);
+               process_output(nd, false);
+           }
+       }
+       shutdownsock(d, R_BOOT);
+       return;
+    }
+
+#ifdef DEBuGSSLPROXY
+    STARTLOG(LOG_ALWAYS, "DEBUG", "SSL");
+       sprintf(s_buff, "[%s] [%s] [%s] - %d", s_command, s_arg, mudconf.sconnect_cmd, strcmp(mudconf.sconnect_cmd, s_command));
+       log_text((UTF8*)s_buff);
+    ENDLOG
+#endif
+    if ( !d->player &&  *s_command && *s_arg && mudconf.sconnect_reip && *(mudconf.sconnect_cmd) &&
+         !strcmp((char *)mudconf.sconnect_cmd, (char *)s_command) ) {
+       addroutbuf = (char *) addrout(d->address.sairo()->sin_addr);
+       memset(s_buff2, '\0', sizeof(s_buff2));
+       sprintf(s_buff2, "%.100s", addroutbuf);
+       if ( d->flags & DS_SSL ) {
+          queue_string(d, T("SSL attempt to negotiate twice."));
+          queue_write_LEN(d, T("\r\n"), 2);
+          sprintf(s_buff, "%.50s -> %.50s {%s} ", s_buff2, s_arg, s_arg);
+          STARTLOG(LOG_ALWAYS, "NET", "SSL");
+             log_text(T("[HACKING] "));
+             log_text((UTF8*)s_buff);
+          ENDLOG
+          /* We're disabling the SSL handler at this point as it's been comprimised */
+          STARTLOG(LOG_ALWAYS, "NET", "SSL");
+             log_text(T("SSL handler [sconnect_reip] has been disabled as secret [sconnect_cmd] was guessed"));
+          ENDLOG
+          mudconf.sconnect_reip = 0;
+
+          if ( d->doing[0] != '\0' ) {
+             sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [BOOTED - HACKING]", d->descriptor, (char *)d->addr, (char *)d->doing, s_arg);
+          } else {
+             sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [BOOTED - HACKING]", d->descriptor, (char *)d->addr, (char *)d->addr, s_arg);
+          }
+          DESC_ITER_CONN(nd)
+          {
+              if (SiteMon(nd->player))
+              {
+                  queue_string(nd, (UTF8*)s_buff);
+                  queue_write_LEN(nd, T("\r\n"), 2);
+                  process_output(nd, false);
+              }
+          }
+          shutdownsock(d, R_BOOT);
+          return;
+       }
+       if ( !*(mudconf.sconnect_host) ) {
+          sprintf(s_buff, "%s", (char *)"localhost 127.0.0.1");
+       } else {
+          strncpy(s_buff, mudconf.sconnect_host, 190);
+       }
+
+       // addroutbuf = (char *) addrout(d->address.sairo()->sin_addr);
+
+       i_valid = 0;
+       addr_len = mp_addr.maxaddrlen();
+       UTF8 *pBuffM2 = alloc_mbuf("new_connection.address");
+       mp_addr.ntop(pBuffM2, MBUF_SIZE);
+
+       // Verify the actual incoming site is allowed by the proxy (stunnel)
+       if ( lookup(s_buff2, s_buff, 1, &aflags) ) {
+          memcpy((char *)&mp_addr, (char *)&d->address, sizeof(mp_addr));
+          if ( inet_aton(s_arg, (struct in_addr *)&(mp_addr.sairo()->sin_addr)) ) {
+             i_valid = 1;
+          }
+          /* Convert IP to DNS if we can */
+          if ( i_valid && mudconf.use_hostname) {
+             memset((void*)&p_sock, 0 , sizeof(p_sock));
+             p_sock.sin_family = AF_INET;
+             if ( *s_arg && (inet_aton(s_arg, &(p_sock.sin_addr)) != 0) )  {
+                if ( getnameinfo((struct sockaddr*)&p_sock, sizeof(struct sockaddr), s_sitetmp, LBUF_SIZE - 1, NULL, 0, NI_NAMEREQD) ) {
+                   sprintf(s_sitetmp, "%.*s", (LBUF_SIZE-1), s_arg);
+                }
+             }
+          } else {
+             sprintf(s_sitetmp, "%.*s", (LBUF_SIZE-1), s_arg);
+          }
+          if ( i_valid ) {
+             if (mudstate.access_list.isForbid(&mp_addr)) {
+                queue_string(d, T("SSL Connections are not allowed from your site."));
+                queue_write_LEN(d, T("\r\n"), 2);
+                sprintf(s_buff, "%.50s -> %.50s {%s} ", s_buff2, s_sitetmp, s_arg);
+                STARTLOG(LOG_ALWAYS, "NET", "SSL");
+                   log_text(T("[FORBIDDEN] "));
+                   log_text((UTF8*)s_buff);
+                ENDLOG
+                sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [FORBIDDEN]", d->descriptor, s_buff2, s_arg, s_arg);
+                DESC_ITER_CONN(nd)
+                {
+                    if (SiteMon(nd->player))
+                    {
+                        queue_string(nd, (UTF8*)s_buff);
+                        queue_write_LEN(nd, T("\r\n"), 2);
+                        process_output(nd, false);
+                    }
+                }
+                shutdownsock(d, R_BOOT);
+             }
+             d->flags |= DS_SSL;
+             if (mudstate.access_list.isRegistered(&mp_addr)) {
+                i_valid |= 2;
+                d->flags |= DS_REGISTER;
+             } 
+             if (mudstate.access_list.check(&mp_addr) & HI_NOGUEST) {
+                i_valid |= 4;
+                d->flags |= DS_NOGUEST;
+             }
+             switch(i_valid) {
+                 case 1:
+                   sprintf(s_buff, "%.50s -> %.50s {%s} ", s_buff2, s_sitetmp, s_arg);
+                   STARTLOG(LOG_ALWAYS, "NET", "SSL");
+                      log_text(T("[OK] "));
+                      log_text((UTF8*)s_buff);
+                   ENDLOG
+                   sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [OK]", d->descriptor, s_buff2, s_sitetmp, s_arg);
+                   DESC_ITER_CONN(nd)
+                   {
+                       if (SiteMon(nd->player))
+                       {
+                           queue_string(nd, (UTF8*)s_buff);
+                           queue_write_LEN(nd, T("\r\n"), 2);
+                           process_output(nd, false);
+                       }
+                   }
+                   break;
+                case 2:
+                case 3: /* register */
+                   sprintf(s_buff, "%.50s -> %.50s {%s} ", s_buff2, s_sitetmp, s_arg);
+                   queue_string(d, T("SSL Connections are registered from your site."));
+                   queue_write_LEN(d, T("\r\n"), 2);
+                   STARTLOG(LOG_ALWAYS, "NET", "SSL");
+                      log_text(T("[REGITERED] "));
+                      log_text((UTF8*)s_buff);
+                   ENDLOG
+                   sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [REGISTERED]", d->descriptor, s_buff2, s_sitetmp, s_arg);
+                   DESC_ITER_CONN(nd)
+                   {
+                       if (SiteMon(nd->player))
+                       {
+                           queue_string(nd, (UTF8*)s_buff);
+                           queue_write_LEN(nd, T("\r\n"), 2);
+                           process_output(nd, false);
+                       }
+                   }
+                   break;
+                case 4:
+                case 5: /* noguest */
+                   sprintf(s_buff, "%.50s -> %.50s {%s} ", s_buff2, s_sitetmp, s_arg);
+                   queue_string(d, T("SSL Connections disable guests from your site."));
+                   queue_write_LEN(d, T("\r\n"), 2);
+                   STARTLOG(LOG_ALWAYS, "NET", "SSL");
+                      log_text(T("[NOGUEST] "));
+                      log_text((UTF8*)s_buff);
+                   ENDLOG
+                   sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [NOGUEST]", d->descriptor, s_buff2, s_sitetmp, s_arg);
+                   DESC_ITER_CONN(nd)
+                   {
+                       if (SiteMon(nd->player))
+                       {
+                           queue_string(nd, (UTF8*)s_buff);
+                           queue_write_LEN(nd, T("\r\n"), 2);
+                           process_output(nd, false);
+                       }
+                   }
+                   break;
+                case 6:
+                case 7: /* register & noguest */
+                   sprintf(s_buff, "%.50s -> %.50s {%s} ", s_buff2, s_sitetmp, s_arg);
+                   queue_string(d, T("SSL Connections are registered and disable guests from your site."));
+                   queue_write_LEN(d, T("\r\n"), 2);
+                   STARTLOG(LOG_ALWAYS, "NET", "SSL");
+                      log_text(T("[REGISTERED & NOGUEST] "));
+                      log_text((UTF8*)s_buff);
+                   ENDLOG
+                   sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [NOGUEST/REGISTERED]", d->descriptor, s_buff2, s_arg, s_arg);
+                   DESC_ITER_CONN(nd)
+                   {
+                       if (SiteMon(nd->player))
+                       {
+                           queue_string(nd, (UTF8*)s_buff);
+                           queue_write_LEN(nd, T("\r\n"), 2);
+                           process_output(nd, false);
+                       }
+                   }
+                   break;
+             }
+             memset(d->addr, '\0', sizeof(d->addr));
+             memset(d->doing, '\0', sizeof(d->doing));
+             mux_strncpy((UTF8*)d->addr, (UTF8*)s_sitetmp, sizeof(d->addr) - 1);
+             mux_strncpy((UTF8*)d->doing, (UTF8*)s_arg, sizeof(d->doing) - 1);
+          } else {
+             // Invalid IP - drop the sucker
+             sprintf(s_buff, "%.50s -> %.50s {%s} ", s_buff2, s_sitetmp, s_arg);
+             STARTLOG(LOG_ALWAYS, "NET", "SSL");
+                log_text(T("[INVALID FORWARD IP] "));
+                log_text((UTF8*)s_buff);
+             ENDLOG
+             shutdownsock(d, R_BOOT);
+          }
+       }
+       free_mbuf(pBuffM2);
+       return;
+    }
+#endif // STUNNEL
     // Look up the command in the logged-out command table.
     //
     NAMETAB *cp = (NAMETAB *)hashfindLEN(command, iArg, &mudstate.logout_cmd_htab);
@@ -3248,18 +3683,32 @@ FUNCTION(fun_siteinfo)
         {
             safe_chr('F', buff, bufc);
         }
-        if (host_info & HI_REGISTER)
+#ifdef STUNNEL
+        if ( (host_info & HI_REGISTER) || (d->flags & DS_REGISTER) )
         {
             safe_chr('R', buff, bufc);
         }
+#else
+        if ( (host_info & HI_REGISTER) )
+        {
+            safe_chr('R', buff, bufc);
+        }
+#endif // STUNNEL
         if (host_info & HI_SUSPECT)
         {
             safe_chr('+', buff, bufc);
         }
-        if (host_info & HI_NOGUEST)
+#ifdef STUNNEL
+        if ( (host_info & HI_NOGUEST) || (d->flags & DS_NOGUEST) )
         {
             safe_chr('G', buff, bufc);
         }
+#else
+        if ( (host_info & HI_NOGUEST) )
+        {
+            safe_chr('G', buff, bufc);
+        }
+#endif // STUNNEL
         return;
     }
 

@@ -66,6 +66,43 @@ void build_version(void)
             T("MUX %s Win32"), MUX_VERSION);
 #endif // ALPHA, BETA, RELEASED
 #else // WIN32
+#if defined(CUST_STRING)
+#if defined(BIGBUFF)
+        mux_sprintf(mudstate.version, sizeof(mudstate.version),
+            T("MUX %s #%s [%s-BB]"), MUX_VERSION, MUX_BUILD_NUM, CUST_STRING);
+        mux_sprintf(mudstate.short_ver, sizeof(mudstate.short_ver),
+            T("MUX %s %s-BB"), MUX_VERSION, CUST_STRING);
+#if defined(STUNNEL)
+        mux_sprintf(mudstate.version, sizeof(mudstate.version),
+            T("MUX %s #%s [%s-BB-ST]"), MUX_VERSION, MUX_BUILD_NUM, CUST_STRING);
+        mux_sprintf(mudstate.short_ver, sizeof(mudstate.short_ver),
+            T("MUX %s %s-BB-ST"), MUX_VERSION, CUST_STRING);
+#endif // STUNNEL
+#elif defined(HUGEBUFF)
+        mux_sprintf(mudstate.version, sizeof(mudstate.version),
+            T("MUX %s #%s [%s-HB]"), MUX_VERSION, MUX_BUILD_NUM, CUST_STRING);
+        mux_sprintf(mudstate.short_ver, sizeof(mudstate.short_ver),
+            T("MUX %s %s-HB"), MUX_VERSION, CUST_STRING);
+#if defined(STUNNEL)
+        mux_sprintf(mudstate.version, sizeof(mudstate.version),
+            T("MUX %s #%s [%s-HB-ST]"), MUX_VERSION, MUX_BUILD_NUM, CUST_STRING);
+        mux_sprintf(mudstate.short_ver, sizeof(mudstate.short_ver),
+            T("MUX %s %s-HB-ST"), MUX_VERSION, CUST_STRING);
+#endif // STUNNEL
+#else // BIGBUFF
+#if defined(STUNNEL)
+        mux_sprintf(mudstate.version, sizeof(mudstate.version),
+            T("MUX %s #%s [%s-ST]"), MUX_VERSION, MUX_BUILD_NUM, CUST_STRING);
+        mux_sprintf(mudstate.short_ver, sizeof(mudstate.short_ver),
+            T("MUX %s %s-ST"), MUX_VERSION, CUST_STRING);
+#else // STUNNEL
+        mux_sprintf(mudstate.version, sizeof(mudstate.version),
+            T("MUX %s #%s [%s]"), MUX_VERSION, MUX_BUILD_NUM, CUST_STRING);
+        mux_sprintf(mudstate.short_ver, sizeof(mudstate.short_ver),
+            T("MUX %s %s"), MUX_VERSION, CUST_STRING);
+#endif // STUNNEL
+#endif // BIGBUFF
+#else // CUST_STRING
 #if defined(ALPHA)
         mux_sprintf(mudstate.version, sizeof(mudstate.version),
             T("MUX %s #%s [ALPHA]"), MUX_VERSION, MUX_BUILD_NUM);
@@ -82,6 +119,7 @@ void build_version(void)
         mux_sprintf(mudstate.short_ver, sizeof(mudstate.short_ver),
             T("MUX %s"), MUX_VERSION);
 #endif // ALPHA, BETA, RELEASED
+#endif // CUST_STRING
 #endif // WIN32
 }
 

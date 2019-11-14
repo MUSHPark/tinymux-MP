@@ -146,8 +146,14 @@ void record_login
     UTF8  *ldate,
     UTF8  *lhost,
     UTF8  *lusername,
+#ifdef STUNNEL
+    UTF8  *lipaddr,
+    DESC *d
+#else
     UTF8  *lipaddr
+#endif // STUNNEL
 )
+
 {
     LDATA login_info;
     dbref aowner;
@@ -195,7 +201,16 @@ void record_login
 
         // Add the players last IP too.
         //
+#ifdef STUNNEL
+        if ( d->doing[0] != '\0' ) {
+           atr_add_raw(player, A_LASTIP, d->doing);
+           d->doing[0] = '\0';
+        } else {
+           atr_add_raw(player, A_LASTIP, lipaddr);
+        }
+#else
         atr_add_raw(player, A_LASTIP, lipaddr);
+#endif // STUNNEL
     }
     else
     {
@@ -686,8 +701,13 @@ static bool check_pass(dbref player, const UTF8 *pPassword)
  * connect_player: Try to connect to an existing player.
  */
 
+#ifdef STUNNEL
+dbref connect_player(UTF8 *name, UTF8 *password, UTF8 *host, UTF8 *username, UTF8 *ipaddr, DESC *d)
+{
+#else
 dbref connect_player(UTF8 *name, UTF8 *password, UTF8 *host, UTF8 *username, UTF8 *ipaddr)
 {
+#endif
     CLinearTimeAbsolute ltaNow;
     ltaNow.GetLocal();
     UTF8 *time_str = ltaNow.ReturnDateString(7);
@@ -699,7 +719,11 @@ dbref connect_player(UTF8 *name, UTF8 *password, UTF8 *host, UTF8 *username, UTF
     }
     if (!check_pass(player, password))
     {
+#ifdef STUNNEL
+        record_login(player, false, time_str, host, username, ipaddr, d);
+#else
         record_login(player, false, time_str, host, username, ipaddr);
+#endif
         return NOTHING;
     }
 

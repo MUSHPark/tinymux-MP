@@ -24,6 +24,14 @@
 #define LBUF_SIZE   24000   // Large
 #define GBUF_SIZE   2048    // Generic
 #define MBUF_SIZE   1280    // Medium
+#elif defined(BIGBUFF)
+#define LBUF_SIZE   16000   // Large
+#define GBUF_SIZE   1024    // Generic
+#define MBUF_SIZE   400     // Medium
+#elif defined(HUGEBUFF)
+#define LBUF_SIZE   32000   // Large
+#define GBUF_SIZE   1024    // Generic
+#define MBUF_SIZE   400     // Medium
 #else
 #define LBUF_SIZE   8000    // Large
 #define GBUF_SIZE   1024    // Generic

@@ -105,6 +105,11 @@ void cf_init(void)
     mudconf.fullmotd_msg[0] = '\0';
     mudconf.dump_msg[0] = '\0';
     mudconf.postdump_msg[0] = '\0';
+#if defined(STUNNEL)
+    mudconf.sconnect_reip = 0;
+    mudconf.sconnect_host[0] = '\0';
+    mudconf.sconnect_cmd[0] = '\0';
+#endif // STUNNEL
     mux_strncpy(mudconf.fixed_home_msg, T("You are fixed in place and cannot move."), sizeof(mudconf.fixed_home_msg)-1);
     mux_strncpy(mudconf.fixed_tel_msg, T("You are fixed in place and cannot teleport."), sizeof(mudconf.fixed_tel_msg)-1);
     mux_strncpy(mudconf.public_channel, T("Public"), sizeof(mudconf.public_channel)-1);
@@ -1948,6 +1953,11 @@ static CONFPARM conftable[] =
     {T("sacrifice_factor"),          cf_int,         CA_GOD,    CA_PUBLIC,   &mudconf.sacfactor,              NULL,               0},
     {T("safe_wipe"),                 cf_bool,        CA_GOD,    CA_WIZARD,   (int *)&mudconf.safe_wipe,       NULL,               0},
     {T("safer_passwords"),           cf_bool,        CA_GOD,    CA_PUBLIC,   (int *)&mudconf.safer_passwords, NULL,               0},
+#ifdef STUNNEL
+    {T("sconnect_host"),             cf_string,      CA_GOD,    CA_WIZARD,   (int *)mudconf.sconnect_host,    NULL,       LBUF_SIZE},
+    {T("sconnect_cmd"),              cf_string,      CA_GOD,    CA_WIZARD,   (int *)mudconf.sconnect_cmd,     NULL,       SBUF_SIZE},
+    {T("sconnect_reip"),             cf_int,         CA_GOD,    CA_PUBLIC,   &mudconf.sconnect_reip,          NULL,               0},
+#endif
     {T("search_cost"),               cf_int,         CA_GOD,    CA_PUBLIC,   &mudconf.searchcost,             NULL,               0},
     {T("see_owned_dark"),            cf_bool,        CA_GOD,    CA_PUBLIC,   (int *)&mudconf.see_own_dark,    NULL,               0},
     {T("signal_action"),             cf_option,      CA_STATIC, CA_GOD,      &mudconf.sig_action,             sigactions_nametab, 0},

@@ -217,8 +217,7 @@ void do_say(dbref executor, dbref caller, dbref enactor, int eval, int key, UTF8
         saystring = modSpeech(executor, messageOrig, false, command);
         if (saystring)
         {
-            notify_saypose(executor, tprintf(T("%s %s \xE2\x80\x9C%s\xE2\x80\x9D"),
-                Moniker(executor), saystring, message));
+            notify_saypose(executor, tprintf(T("%s %s \xE2\x80\x9C%s\xE2\x80\x9D"), Moniker(executor), saystring, message));
 #ifdef REALITY_LVLS
             notify_except_rlevel(loc, executor, executor, tprintf(T("%s %s \xE2\x80\x9C%s\xE2\x80\x9D"), Moniker(executor), saystring, message), MSG_SAYPOSE);
 #else
@@ -228,7 +227,7 @@ void do_say(dbref executor, dbref caller, dbref enactor, int eval, int key, UTF8
         }
         else
         {
-            notify_saypose(executor, tprintf(T("You say, \xE2\x80\x9C%s\xE2\x80\x9D"), message));
+            notify_saypose(executor, tprintf(T("%s says, \xE2\x80\x9C%s\xE2\x80\x9D"), Moniker(executor), message));
 #ifdef REALITY_LVLS
             notify_except_rlevel(loc, executor, executor, tprintf(T("%s says, \xE2\x80\x9C%s\xE2\x80\x9D"), Moniker(executor), message), MSG_SAYPOSE);
 #else
@@ -1181,7 +1180,7 @@ void do_pemit_single
             {
                 message = newMessage;
             }
-            notify(target, tprintf(T("You say, \xE2\x80\x9C%s\xE2\x80\x9D"), message));
+            notify(target, tprintf(T("%s says, \xE2\x80\x9C%s\xE2\x80\x9D"), Moniker(target), message));
             if (loc != NOTHING)
             {
                 saystring = modSpeech(target, message, false, (UTF8 *)"@fsay");

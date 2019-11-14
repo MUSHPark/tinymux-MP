@@ -1166,7 +1166,7 @@ static int
 set_start_bits(const uschar *code, uschar *start_bits, bool caseless,
   bool utf8, compile_data *cd)
 {
-register int c;
+int c;
 int yield = SSB_DONE;
 
 #if 0
@@ -2778,7 +2778,7 @@ else
       c = 0;
       while ((digitab[*pt] & ctype_xdigit) != 0)
         {
-        register int cc = *pt++;
+        int cc = *pt++;
         if (c == 0 && cc == '0') continue;     /* Leading zeroes */
         count++;
 
@@ -3235,8 +3235,8 @@ find_fixedlength(uschar *code, int options)
 {
 int length = -1;
 
-register int branchlength = 0;
-register uschar *cc = code + 1 + LINK_SIZE;
+int branchlength = 0;
+uschar *cc = code + 1 + LINK_SIZE;
 
 /* Scan along the opcodes for this branch. If we get to the end of the
 branch, check the length against that of the other branches. */
@@ -3244,7 +3244,7 @@ branch, check the length against that of the other branches. */
 for (;;)
   {
   int d;
-  register int op = *cc;
+  int op = *cc;
 
   switch (op)
     {
@@ -3424,7 +3424,7 @@ find_bracket(const uschar *code, bool utf8, int number)
 {
 for (;;)
   {
-  register int c = *code;
+  int c = *code;
   if (c == OP_END) return NULL;
 
   /* XCLASS is used for classes that cannot be represented just by a bit
@@ -3496,7 +3496,7 @@ find_recurse(const uschar *code, bool utf8)
 {
 for (;;)
   {
-  register int c = *code;
+  int c = *code;
   if (c == OP_END) return NULL;
   if (c == OP_RECURSE) return code;
 
@@ -3564,7 +3564,7 @@ Returns:      true if what is matched could be empty
 static bool
 could_be_empty_branch(const uschar *code, const uschar *endcode, bool utf8)
 {
-register int c;
+int c;
 for (code = first_significant_code(code + _pcre_OP_lengths[*code], NULL, 0, true);
      code < endcode;
      code = first_significant_code(code + _pcre_OP_lengths[c], NULL, 0, true))
@@ -3784,7 +3784,7 @@ Returns:     a value representing the name, or -1 if unknown
 static int
 check_posix_name(const uschar *ptr, int len)
 {
-register int yield = 0;
+int yield = 0;
 while (posix_name_lengths[yield] != 0)
   {
   if (len == posix_name_lengths[yield] &&
@@ -4234,8 +4234,8 @@ int req_caseopt, reqvary, tempreqvary;
 int options = *optionsptr;
 int after_manual_callout = 0;
 int length_prevgroup = 0;
-register int c;
-register uschar *code = *codeptr;
+int c;
+uschar *code = *codeptr;
 uschar *last_code = code;
 uschar *orig_code = code;
 uschar *tempcode;
@@ -4568,7 +4568,7 @@ for (;; ptr++)
         {
         bool local_negate = false;
         int posix_class, taboffset, tabopt;
-        register const uschar *cbits = cd->cbits;
+        const uschar *cbits = cd->cbits;
         uschar pbits[32];
 
         if (ptr[1] != ':')
@@ -4670,7 +4670,7 @@ for (;; ptr++)
 
         if (c < 0)
           {
-          register const uschar *cbits = cd->cbits;
+          const uschar *cbits = cd->cbits;
           class_charcount += 2;     /* Greater than 1 is what matters */
 
           /* Save time by not doing this in the pre-compile phase. */
@@ -5445,7 +5445,7 @@ for (;; ptr++)
     else if (*previous == OP_BRA  || *previous == OP_CBRA ||
              *previous == OP_ONCE || *previous == OP_COND)
       {
-      register int i;
+      int i;
       int ketoffset = 0;
       int len = code - previous;
       uschar *bralink = NULL;
@@ -5474,7 +5474,7 @@ for (;; ptr++)
 
       if (repeat_max == -1)
         {
-        register uschar *ket = previous;
+        uschar *ket = previous;
         do ket += GET(ket, 1); while (*ket != OP_KET);
         ketoffset = code - ket;
         }
@@ -7007,13 +7007,13 @@ Returns:     true or false
 */
 
 static bool
-is_anchored(register const uschar *code, int *options, unsigned int bracket_map,
+is_anchored(const uschar *code, int *options, unsigned int bracket_map,
   unsigned int backref_map)
 {
 do {
    const uschar *scode = first_significant_code(code + _pcre_OP_lengths[*code],
      options, PCRE_MULTILINE, false);
-   register int op = *scode;
+   int op = *scode;
 
    /* Non-capturing brackets */
 
@@ -7089,7 +7089,7 @@ is_startline(const uschar *code, unsigned int bracket_map,
 do {
    const uschar *scode = first_significant_code(code + _pcre_OP_lengths[*code],
      NULL, 0, false);
-   register int op = *scode;
+   int op = *scode;
 
    /* Non-capturing brackets */
 
@@ -7157,12 +7157,12 @@ Returns:     -1 or the fixed first char
 static int
 find_firstassertedchar(const uschar *code, int *options, bool inassert)
 {
-register int c = -1;
+int c = -1;
 do {
    int d;
    const uschar *scode =
      first_significant_code(code + 1+LINK_SIZE, options, PCRE_CASELESS, true);
-   register int op = *scode;
+   int op = *scode;
 
    switch(op)
      {
@@ -7234,7 +7234,7 @@ static int
 _pcre_valid_utf8(const uschar *string, int length)
 {
 #ifdef SUPPORT_UTF8
-register const uschar *p;
+const uschar *p;
 
 if (length < 0)
   {
@@ -7244,8 +7244,8 @@ if (length < 0)
 
 for (p = string; length-- > 0; p++)
   {
-  register int ab;
-  register int c = *p;
+  int ab;
+  int c = *p;
   if (c < 128) continue;
   if (c < 0xc0) return p - string;
   ab = _pcre_utf8_table4[c & 0x3f];  /* Number of additional bytes */
@@ -7679,7 +7679,7 @@ Returns:      true if matched
 */
 
 static bool
-match_ref(int offset, register USPTR eptr, int length, match_data *md,
+match_ref(int offset, USPTR eptr, int length, match_data *md,
   unsigned long int ims)
 {
     USPTR p = md->start_subject + md->offset_vector[offset];
@@ -7858,7 +7858,7 @@ always used to.
 /* These versions of the macros use the stack, as normal. There are debugging
 versions and production versions. */
 
-#define REGISTER register
+// #define REGISTER register
 #define RMATCH(rx,ra,rb,rc,rd,re,rf,rg) \
   rx = match(ra,rb,rc,rd,re,rf,rg,rdepth+1)
 #define RRETURN(ra) return ra
@@ -7904,7 +7904,7 @@ Returns:       MATCH_MATCH if matched            )  these values are >= 0
 */
 
 static int
-match(REGISTER USPTR eptr, REGISTER const uschar *ecode,
+match(USPTR eptr, const uschar *ecode,
   int offset_top, match_data *md, unsigned long int ims, eptrblock *eptrb,
   int flags, unsigned int rdepth)
 {
@@ -7912,10 +7912,10 @@ match(REGISTER USPTR eptr, REGISTER const uschar *ecode,
 so they can be ordinary variables in all cases. Mark some of them with
 "register" because they are used a lot in loops. */
 
-register int  rrc;         /* Returns from recursive calls */
-register int  i;           /* Used for loops not involving calls to RMATCH() */
-register unsigned int c;   /* Character values not kept over RMATCH() calls */
-register bool utf8;        /* Local copy of UTF-8 flag for speed */
+int  rrc;         /* Returns from recursive calls */
+int  i;           /* Used for loops not involving calls to RMATCH() */
+unsigned int c;   /* Character values not kept over RMATCH() calls */
+bool utf8;        /* Local copy of UTF-8 flag for speed */
 
 bool minimize, possessive; /* Quantifier options */
 
@@ -9784,7 +9784,7 @@ for (;!MuxAlarm.bAlarmed;)
       /* UTF-8 mode */
       if (utf8)
         {
-        register unsigned int d;
+        unsigned int d;
         for (i = 1; i <= min; i++)
           {
           GETCHARINC(d, eptr);
@@ -9809,7 +9809,7 @@ for (;!MuxAlarm.bAlarmed;)
         /* UTF-8 mode */
         if (utf8)
           {
-          register unsigned int d;
+          unsigned int d;
           for (fi = min;; fi++)
             {
             RMATCH(rrc, eptr, ecode, offset_top, md, ims, eptrb, 0);
@@ -9845,7 +9845,7 @@ for (;!MuxAlarm.bAlarmed;)
         /* UTF-8 mode */
         if (utf8)
           {
-          register unsigned int d;
+          unsigned int d;
           for (i = min; i < max; i++)
             {
             int len = 1;
@@ -9895,7 +9895,7 @@ for (;!MuxAlarm.bAlarmed;)
       /* UTF-8 mode */
       if (utf8)
         {
-        register unsigned int d;
+        unsigned int d;
         for (i = 1; i <= min; i++)
           {
           GETCHARINC(d, eptr);
@@ -9918,7 +9918,7 @@ for (;!MuxAlarm.bAlarmed;)
         /* UTF-8 mode */
         if (utf8)
           {
-          register unsigned int d;
+          unsigned int d;
           for (fi = min;; fi++)
             {
             RMATCH(rrc, eptr, ecode, offset_top, md, ims, eptrb, 0);
@@ -9953,7 +9953,7 @@ for (;!MuxAlarm.bAlarmed;)
         /* UTF-8 mode */
         if (utf8)
           {
-          register unsigned int d;
+          unsigned int d;
           for (i = min; i < max; i++)
             {
             int len = 1;
@@ -11159,7 +11159,7 @@ tables = external_re->tables;
 
 if (extra_data != NULL)
   {
-  register unsigned int flags = extra_data->flags;
+  unsigned int flags = extra_data->flags;
   if ((flags & PCRE_EXTRA_STUDY_DATA) != 0)
     study = (const pcre_study_data *)extra_data->study_data;
   if ((flags & PCRE_EXTRA_MATCH_LIMIT) != 0)
@@ -11325,8 +11325,8 @@ initialize them to avoid reading uninitialized locations. */
 
 if (md->offset_vector != NULL)
   {
-  register int *iptr = md->offset_vector + ocount;
-  register int *iend = iptr - resetcount/2 + 1;
+  int *iptr = md->offset_vector + ocount;
+  int *iend = iptr - resetcount/2 + 1;
   while (--iptr >= iend) *iptr = -1;
   }
 
@@ -11374,8 +11374,8 @@ for(;;)
 
   if (md->offset_vector != NULL)
     {
-    register int *iptr = md->offset_vector;
-    register int *iend = iptr + resetcount;
+    int *iptr = md->offset_vector;
+    int *iend = iptr + resetcount;
     while (iptr < iend) *iptr++ = -1;
     }
 
@@ -11432,7 +11432,7 @@ for(;;)
     {
     while (start_match < end_subject)
       {
-      register unsigned int c = *start_match;
+      unsigned int c = *start_match;
       if ((start_bits[c/8] & (1 << (c&7))) == 0) start_match++; else break;
       }
     }
@@ -11461,7 +11461,7 @@ for(;;)
       end_subject - start_match < REQ_BYTE_MAX &&
       !md->partial)
     {
-    register USPTR p = start_match + ((first_byte >= 0)? 1 : 0);
+    USPTR p = start_match + ((first_byte >= 0)? 1 : 0);
 
     /* We don't need to repeat the search if we haven't yet reached the
     place we found it at last time. */
@@ -11472,7 +11472,7 @@ for(;;)
         {
         while (p < end_subject)
           {
-          register int pp = *p++;
+          int pp = *p++;
           if (pp == req_byte || pp == req_byte2) { p--; break; }
           }
         }

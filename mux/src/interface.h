@@ -231,6 +231,11 @@ void DisableUs(DESC *d, unsigned char chOption);
 #define DS_CONNECTED    0x0001      // player is connected.
 #define DS_AUTODARK     0x0002      // Wizard was auto set dark.
 #define DS_PUEBLOCLIENT 0x0004      // Client is Pueblo-enhanced.
+#ifdef STUNNEL
+#define DS_SSL		0x0008      // Client is using SSL tunnel
+#define DS_NOGUEST	0x0010      // Set SSL client noguest 
+#define DS_REGISTER	0x0020      // Set SSL client register
+#endif // STUNNEL
 
 extern DESC *descriptor_list;
 extern unsigned int ndescriptors;
@@ -316,8 +321,14 @@ extern void handle_prog(DESC *d, UTF8 *message);
 
 // From player.cpp
 //
+#ifdef STUNNEL
+void record_login(dbref, bool, UTF8 *, UTF8 *, UTF8 *, UTF8 *, DESC *);
+extern dbref connect_player(UTF8 *, UTF8 *, UTF8 *, UTF8 *, UTF8 *, DESC *);
+#else
 void record_login(dbref, bool, UTF8 *, UTF8 *, UTF8 *, UTF8 *);
 extern dbref connect_player(UTF8 *, UTF8 *, UTF8 *, UTF8 *, UTF8 *);
+#endif
+
 
 
 #define DESC_ITER_PLAYER(p,d) \

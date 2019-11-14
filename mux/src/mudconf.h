@@ -136,6 +136,11 @@ struct confdata
     int     thing_name_charset; // Charset restrictions for thing names.
     int     password_methods;   // Password encryption methods.
     int     default_charset;    // Default client charset mapping.
+#ifdef STUNNEL
+    char    sconnect_cmd[SBUF_SIZE]; /* command for the sconnect re-ip handler */
+    char    sconnect_host[LBUF_SIZE]; /* sites for allowable sconnect re-iper */
+    int     sconnect_reip;  /* Toggle for sconnect re-iper */
+#endif // STUNNEL
 #ifdef REALITY_LVLS
     int     no_levels;          /* Number of reality levels */
     struct  rlevel_def

@@ -653,12 +653,18 @@ CPPFLAGS
 LDFLAGS
 CXXFLAGS
 CXX
+CUST_STRING
+FRIENDLY_SIGUSR2
+HUGEBUFF
+BIGBUFF
+STUNNEL
 DEPRECATED
 SSL
+SELFCHECK
+RELEASE_LEVEL
+INLINESQL
 SQL_LIBPATH
 SQL_INCLUDE
-SELFCHECK
-INLINESQL
 FIRANLIBS
 FIRANMUX
 STUBSLAVE_TARGET
@@ -687,7 +693,6 @@ infodir
 docdir
 oldincludedir
 includedir
-runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -716,11 +721,17 @@ enable_memorybased
 enable_stubslave
 enable_firanmux
 enable_inlinesql
-enable_selfcheck
 with_mysql_include
 with_mysql_libs
+enable_release_level
+enable_selfcheck
 enable_ssl
 enable_deprecated
+enable_stunnel
+enable_bigbuff
+enable_hugebuff
+enable_friendly_sigusr2
+enable_custom_version
 '
       ac_precious_vars='build_alias
 host_alias
@@ -773,7 +784,6 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
-runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1026,15 +1036,6 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -runstatedir | --runstatedir | --runstatedi | --runstated \
-  | --runstate | --runstat | --runsta | --runst | --runs \
-  | --run | --ru | --r)
-    ac_prev=runstatedir ;;
-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-  | --run=* | --ru=* | --r=*)
-    runstatedir=$ac_optarg ;;
-
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1172,7 +1173,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir runstatedir
+		libdir localedir mandir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1325,7 +1326,6 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1366,9 +1366,21 @@ Optional Features:
   --enable-firanmux       enable Firan MUX (default is NO)
   --enable-inlinesql      enable inline MySQL support compatible with PennMUSH
                           and TinyMUSH 3.x (default is NO)
+  --enable-release-level=<string>
+                          define a specific release-level (default is blank)
   --enable-selfcheck      enable expensive self-checking (default is NO)
   --enable-ssl            enable SSL encryption support (default is NO)
   --enable-deprecated     enable deprecated features (default is NO)
+  --enable-stunnel        enable stunnel for TLS connections (default is NO)
+  --enable-bigbuff        enable 16k buffers instead of 8k (default is NO)
+  --enable-hugebuff       enable 32k buffers instead of 8k (default is NO)
+                          Hugebuff takes precedence over bigbuff if both are
+                          set
+  --enable-friendly-sigusr2
+                          use friendlier messages when SIGUSR2 is received
+                          (default is NO)
+  --enable-custom-version=<string>
+                          use a custom string in versions (default is blank)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -2729,6 +2741,90 @@ $as_echo "no" >&6; }
       INLINESQL="-DINLINESQL"
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for location of SQL header files" >&5
+$as_echo_n "checking for location of SQL header files... " >&6; }
+
+# Check whether --with-mysql-include was given.
+if test "${with_mysql_include+set}" = set; then :
+  withval=$with_mysql_include;
+         SQL_INCLUDE="-I$withval"
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
+$as_echo "$withval" >&6; }
+
+else
+
+         if test -d "/usr/include/mysql"; then
+            bestguessval="/usr/include/mysql"
+            SQL_INCLUDE="-I$bestguessval"
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $bestguessval" >&5
+$as_echo "$bestguessval" >&6; }
+         elif test -d "/usr/local/include/mysql"; then
+            bestguessval="/usr/local/include/mysql"
+            SQL_INCLUDE="-I$bestguessval"
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $bestguessval" >&5
+$as_echo "$bestguessval" >&6; }
+         else
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: Unknown. Use --with-mysql-include with path" >&5
+$as_echo "Unknown. Use --with-mysql-include with path" >&6; }
+         fi
+
+fi
+
+
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for location of SQL library files" >&5
+$as_echo_n "checking for location of SQL library files... " >&6; }
+
+# Check whether --with-mysql-libs was given.
+if test "${with_mysql_libs+set}" = set; then :
+  withval=$with_mysql_libs;
+         SQL_LIBPATH="-L$withval"
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
+$as_echo "$withval" >&6; }
+
+else
+
+         if test -d "/usr/lib/mysql"; then
+            bestguessval="/usr/lib/mysql"
+            SQL_LIBPATH="-L$bestguessval"
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $bestguessval" >&5
+$as_echo "$bestguessval" >&6; }
+         elif test -d "/usr/local/lib/mysql"; then
+            bestguessval="/usr/local/lib/mysql"
+            SQL_LIBPATH="-L$bestguessval"
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $bestguessval" >&5
+$as_echo "$bestguessval" >&6; }
+         else
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: Unknown. Use --with-mysql-libs with path" >&5
+$as_echo "Unknown. Use --with-mysql-libs with path" >&6; }
+         fi
+
+fi
+
+
+    fi
+
+else
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking wheter to define a release level" >&5
+$as_echo_n "checking wheter to define a release level... " >&6; }
+# Check whether --enable-release-level was given.
+if test "${enable_release_level+set}" = set; then :
+  enableval=$enable_release_level;
+    if test "x$enableval" = "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    else
+      RELEASE_LEVEL="-D$enableval"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
     fi
 
 else
@@ -2758,68 +2854,6 @@ else
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-
-fi
-
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for location of SQL header files" >&5
-$as_echo_n "checking for location of SQL header files... " >&6; }
-
-# Check whether --with-mysql-include was given.
-if test "${with_mysql_include+set}" = set; then :
-  withval=$with_mysql_include;
-      SQL_INCLUDE="-I$withval"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
-$as_echo "$withval" >&6; }
-
-else
-
-      if test -d "/usr/include/mysql"; then
-          bestguessval="/usr/include/mysql"
-          SQL_INCLUDE="-I$bestguessval"
-          { $as_echo "$as_me:${as_lineno-$LINENO}: result: $bestguessval" >&5
-$as_echo "$bestguessval" >&6; }
-      elif test -d "/usr/local/include/mysql"; then
-          bestguessval="/usr/local/include/mysql"
-          SQL_INCLUDE="-I$bestguessval"
-          { $as_echo "$as_me:${as_lineno-$LINENO}: result: $bestguessval" >&5
-$as_echo "$bestguessval" >&6; }
-      else
-          { $as_echo "$as_me:${as_lineno-$LINENO}: result: Unknown. Use --with-mysql-include with path" >&5
-$as_echo "Unknown. Use --with-mysql-include with path" >&6; }
-      fi
-
-fi
-
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for location of SQL library files" >&5
-$as_echo_n "checking for location of SQL library files... " >&6; }
-
-# Check whether --with-mysql-libs was given.
-if test "${with_mysql_libs+set}" = set; then :
-  withval=$with_mysql_libs;
-      SQL_LIBPATH="-L$withval"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
-$as_echo "$withval" >&6; }
-
-else
-
-      if test -d "/usr/lib/mysql"; then
-          bestguessval="/usr/lib/mysql"
-          SQL_LIBPATH="-L$bestguessval"
-          { $as_echo "$as_me:${as_lineno-$LINENO}: result: $bestguessval" >&5
-$as_echo "$bestguessval" >&6; }
-      elif test -d "/usr/local/lib/mysql"; then
-          bestguessval="/usr/local/lib/mysql"
-          SQL_LIBPATH="-L$bestguessval"
-          { $as_echo "$as_me:${as_lineno-$LINENO}: result: $bestguessval" >&5
-$as_echo "$bestguessval" >&6; }
-      else
-          { $as_echo "$as_me:${as_lineno-$LINENO}: result: Unknown. Use --with-mysql-libs with path" >&5
-$as_echo "Unknown. Use --with-mysql-libs with path" >&6; }
-      fi
 
 fi
 
@@ -2859,6 +2893,126 @@ if test "${enable_deprecated+set}" = set; then :
 $as_echo "no" >&6; }
     else
       DEPRECATED="-DDEPRECATED"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    fi
+
+else
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to use stunnel for TLS" >&5
+$as_echo_n "checking whether to use stunnel for TLS... " >&6; }
+# Check whether --enable-stunnel was given.
+if test "${enable_stunnel+set}" = set; then :
+  enableval=$enable_stunnel;
+    if test "x$enableval" = "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    else
+      CUST_STRING="-DCUST_STRING=\"\\\"CUST\\\"\""
+      STUNNEL="-DSTUNNEL"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    fi
+
+else
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to use 16k buffers insetad of 8k" >&5
+$as_echo_n "checking whether to use 16k buffers insetad of 8k... " >&6; }
+# Check whether --enable-bigbuff was given.
+if test "${enable_bigbuff+set}" = set; then :
+  enableval=$enable_bigbuff;
+    if test "x$enableval" = "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    else
+      CUST_STRING="-DCUST_STRING=\"\\\"CUST\\\"\""
+      BIGBUFF="-DBIGBUFF"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    fi
+
+else
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to use 32k buffers insetad of 8k" >&5
+$as_echo_n "checking whether to use 32k buffers insetad of 8k... " >&6; }
+# Check whether --enable-hugebuff was given.
+if test "${enable_hugebuff+set}" = set; then :
+  enableval=$enable_hugebuff;
+    if test "x$enableval" = "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    else
+      CUST_STRING="-DCUST_STRING=\"\\\"CUST\\\"\""
+      BIGBUFF=""
+      HUGEBUFF="-DHUGEBUFF"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    fi
+
+else
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to use friendly messages when SIGUSR2 is received" >&5
+$as_echo_n "checking whether to use friendly messages when SIGUSR2 is received... " >&6; }
+# Check whether --enable-friendly-sigusr2 was given.
+if test "${enable_friendly_sigusr2+set}" = set; then :
+  enableval=$enable_friendly_sigusr2;
+    if test "x$enableval" = "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    else
+      CUST_STRING="-DCUST_STRING=\"\\\"CUST\\\"\""
+      FRIENDLY_SIGUSR2="-DFRIENDLY_SIGUSR2"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    fi
+
+else
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to use a custom version string" >&5
+$as_echo_n "checking whether to use a custom version string... " >&6; }
+# Check whether --enable-custom-version was given.
+if test "${enable_custom_version+set}" = set; then :
+  enableval=$enable_custom_version;
+    if test "x$enableval" = "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    else
+      CUST_STRING="-DCUST_STRING=\"\\\"$enableval\\\"\""
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
     fi
