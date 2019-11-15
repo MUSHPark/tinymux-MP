@@ -24,7 +24,7 @@ bool ConvertTimeString(char *pTime, time_t *pt);
 typedef struct
 {
     const char *pName;
-    const int  mask;
+    const unsigned mask;
 } NameMask;
 
 struct ltstr
@@ -43,6 +43,6 @@ struct lti
     }
 };
 
-#define OMEGA_VERSION "1.1.0.0"
+#define OMEGA_VERSION "1.1.0.1"
 
 #endif
