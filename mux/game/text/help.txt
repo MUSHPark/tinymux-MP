@@ -7488,7 +7488,9 @@ GENDER
   attribute controls how gender-specific pronoun substitutions are evaluated
   for the player.  If the player's Sex attribute starts with an 'M' or an 'm'
   then the player is assumed to be male,  'F', 'f', 'W', and 'w' indicate
-  female, and anything else indicates neuter.
+  female, and anything else indicates neuter, where 'P', 'p' represents
+  multiple characters (originally Plural) and returns they/them/their/theirs,
+  and anything else is considered singular and returns it/it/its/its.
 
   Related Topics: SUBSTITUTIONS.
 
