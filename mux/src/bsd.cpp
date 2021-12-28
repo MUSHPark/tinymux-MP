@@ -4620,15 +4620,11 @@ static void DCL_CDECL sighandler(int sig)
         // Drop a flatfile.
         //
         log_signal(sig);
-<<<<<<< HEAD
 #ifdef FRIENDLY_SIGUSR2
         raw_broadcast(0, T("GAME: Flatfile backup in progress. Please wait."));
 #else
         raw_broadcast(0, T("Caught signal %s requesting a flatfile @dump. Please wait."), SignalDesc(sig));
 #endif
-=======
-        raw_broadcast(0, T("Caught signal %s requesting a flatfile @dump. Please wait."), signal_desc(sig));
->>>>>>> f3961001ac4da0a421fbd4f7a3616c0c501f81ff
         dump_database_internal(DUMP_I_SIGNAL);
 #ifdef FRIENDLY_SIGUSR2
         raw_broadcast(0, T("GAME: Flatfile backup completed. Please continue."));

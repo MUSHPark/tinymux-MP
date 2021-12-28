@@ -182,14 +182,9 @@ DEFS =
 #
 AUX_SRC = unsplit.cpp
 ALLCXXFLAGS = $(CXXFLAGS) $(OPTIM) $(DEFS) $(MEMORY_BASED) $(WOD_REALMS) \
-<<<<<<< HEAD
     $(REALITY_LVLS) $(STUB_SLAVE) $(FIRANMUX) $(DEPRECATED) $(SELFCHECK) \
     $(INLINESQL) $(SQL_INCLUDE) $(SSL) $(RELEASE_LEVEL) $(STUNNEL) \
 	$(BIGBUFF) $(HUGEBUFF) $(FRIENDLY_SIGUSR2) $(CUST_STRING)
-=======
-    $(REALITY_LVLS) $(STUB_SLAVE) $(DEPRECATED) $(SELFCHECK) $(INLINESQL) \
-    $(SQL_INCLUDE) $(SSL)
->>>>>>> f3961001ac4da0a421fbd4f7a3616c0c501f81ff
 
 # Compiliation source files.
 #
@@ -242,11 +237,7 @@ depend: $(ALLSRC) unsplit
 	mv .depend~ .depend
 
 realclean:
-<<<<<<< HEAD
-	-rm -f *.o a.out core gmon.out dbconvert config.status config.log netmux netmux~ @DYNAMICLIB_TARGET@ @DYNAMICLIB_TARGET@~ slave @STUBSLAVE_TARGET@ Makefile modules/*.so tools/announce
-=======
 	-rm -f *.o a.out core gmon.out dbconvert config.status config.log netmux netmux~ @DYNAMICLIB_TARGET@ @DYNAMICLIB_TARGET@~ slave @STUBSLAVE_TARGET@ autoconf.h Makefile
->>>>>>> f3961001ac4da0a421fbd4f7a3616c0c501f81ff
 
 clean:
 	-rm -f *.o a.out core gmon.out warn.log config.status config.log netmux~ @DYNAMICLIB_TARGET@~

@@ -1941,7 +1941,6 @@ static CONFPARM conftable[] =
     {T("robot_speech"),              cf_bool,        CA_GOD,    CA_PUBLIC,   (int *)&mudconf.robot_speak,     nullptr,            0},
     {T("room_flags"),                cf_set_flags,   CA_GOD,    CA_DISABLED, (int *)&mudconf.room_flags,      nullptr,            0},
     {T("room_name_charset"),         cf_modify_bits, CA_GOD,    CA_PUBLIC,   &mudconf.room_name_charset,      allow_charset_nametab, 0},
-<<<<<<< HEAD
     {T("room_parent"),               cf_dbref,       CA_GOD,    CA_PUBLIC,   &mudconf.room_parent,            NULL,               0},
     {T("room_quota"),                cf_int,         CA_GOD,    CA_PUBLIC,   &mudconf.room_quota,             NULL,               0},
     {T("run_startup"),               cf_bool,        CA_STATIC, CA_WIZARD,   (int *)&mudconf.run_startup,     NULL,               0},
@@ -1956,17 +1955,6 @@ static CONFPARM conftable[] =
 #endif
     {T("search_cost"),               cf_int,         CA_GOD,    CA_PUBLIC,   &mudconf.searchcost,             NULL,               0},
     {T("see_owned_dark"),            cf_bool,        CA_GOD,    CA_PUBLIC,   (int *)&mudconf.see_own_dark,    NULL,               0},
-=======
-    {T("room_parent"),               cf_dbref,       CA_GOD,    CA_PUBLIC,   &mudconf.room_parent,            nullptr,            0},
-    {T("room_quota"),                cf_int,         CA_GOD,    CA_PUBLIC,   &mudconf.room_quota,             nullptr,            0},
-    {T("run_startup"),               cf_bool,        CA_STATIC, CA_WIZARD,   (int *)&mudconf.run_startup,     nullptr,            0},
-    {T("sacrifice_adjust"),          cf_int,         CA_GOD,    CA_PUBLIC,   &mudconf.sacadjust,              nullptr,            0},
-    {T("sacrifice_factor"),          cf_int,         CA_GOD,    CA_PUBLIC,   &mudconf.sacfactor,              nullptr,            0},
-    {T("safe_wipe"),                 cf_bool,        CA_GOD,    CA_WIZARD,   (int *)&mudconf.safe_wipe,       nullptr,            0},
-    {T("safer_passwords"),           cf_bool,        CA_GOD,    CA_PUBLIC,   (int *)&mudconf.safer_passwords, nullptr,            0},
-    {T("search_cost"),               cf_int,         CA_GOD,    CA_PUBLIC,   &mudconf.searchcost,             nullptr,            0},
-    {T("see_owned_dark"),            cf_bool,        CA_GOD,    CA_PUBLIC,   (int *)&mudconf.see_own_dark,    nullptr,            0},
->>>>>>> f3961001ac4da0a421fbd4f7a3616c0c501f81ff
     {T("signal_action"),             cf_option,      CA_STATIC, CA_GOD,      &mudconf.sig_action,             sigactions_nametab, 0},
     {T("site_chars"),                cf_int,         CA_GOD,    CA_WIZARD,   (int *)&mudconf.site_chars,      nullptr,            0},
     {T("sitemon_site"),              cf_site,        CA_GOD,    CA_DISABLED, (int *)&mudstate.access_list,    nullptr,   HC_SITEMON},
