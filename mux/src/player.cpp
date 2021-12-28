@@ -1,8 +1,6 @@
 /*! \file player.cpp
  * \brief Player-related routines.
  *
- * $Id$
- *
  * As opposed to other types of objects, players have passwords, have more
  * limited names, can log in, etc.
  */
@@ -52,7 +50,7 @@ NAMETAB method_nametab[] =
     {T("md5"),             3,  CA_GOD,     CRYPT_MD5},
     {T("sha256"),          6,  CA_GOD,     CRYPT_SHA256},
     {T("sha512"),          6,  CA_GOD,     CRYPT_SHA512},
-    {(UTF8 *) NULL,        0,       0,     0}
+    {(UTF8 *) nullptr,     0,       0,     0}
 };
 
 /* ---------------------------------------------------------------------------
@@ -68,13 +66,13 @@ static void decrypt_logindata(UTF8 *atrbuf, LDATA *info)
     info->new_bad = 0;
     for (i = 0; i < NUM_GOOD; i++)
     {
-        info->good[i].host = NULL;
-        info->good[i].dtm = NULL;
+        info->good[i].host = nullptr;
+        info->good[i].dtm = nullptr;
     }
     for (i = 0; i < NUM_BAD; i++)
     {
-        info->bad[i].host = NULL;
-        info->bad[i].dtm = NULL;
+        info->bad[i].host = nullptr;
+        info->bad[i].dtm = nullptr;
     }
 
     if (*atrbuf == '#')
@@ -374,7 +372,7 @@ static const UTF8 *GenerateSalt(int iType)
             || CRYPT_SHA256 == iType
             || CRYPT_SHA512 == iType)
     {
-        const UTF8 *pPrefix = NULL;
+        const UTF8 *pPrefix = nullptr;
         size_t      nPrefix = 0;
         size_t      nSalt = 0;
 
@@ -418,26 +416,26 @@ static const UTF8 *GenerateSalt(int iType)
 void ChangePassword(dbref player, const UTF8 *szPassword)
 {
     int iTypeOut;
-    const UTF8 *pEncodedPassword = NULL;
+    const UTF8 *pEncodedPassword = nullptr;
     int methods[] = { CRYPT_SHA512, CRYPT_SHA256, CRYPT_MD5, CRYPT_SHA1, CRYPT_DES };
     for (size_t i = 0; i < sizeof(methods)/sizeof(methods[0]); i++)
     {
         if (  (mudconf.password_methods & methods[i])
-           && NULL != (pEncodedPassword = mux_crypt(szPassword, GenerateSalt(methods[i]), &iTypeOut)))
+           && nullptr != (pEncodedPassword = mux_crypt(szPassword, GenerateSalt(methods[i]), &iTypeOut)))
         {
             break;
         }
     }
 
-    if (NULL == pEncodedPassword)
+    if (nullptr == pEncodedPassword)
     {
         pEncodedPassword = mux_crypt(szPassword, GenerateSalt(CRYPT_SHA1), &iTypeOut);
-        mux_assert(NULL != pEncodedPassword);
+        mux_assert(nullptr != pEncodedPassword);
     }
     s_Pass(player, pEncodedPassword);
 }
 
-#if defined(UNIX_DIGEST) && !defined(OPENSSL_NO_SHA0)
+#if defined(UNIX_DIGEST) && defined(HAVE_SHA_INIT)
 const UTF8 *p6h_xx_crypt(const UTF8 *szPassword)
 {
     // Calculate SHA-0 Hash.
@@ -509,7 +507,7 @@ const UTF8 *p6h_vaht_crypt(const UTF8 *szPassword, const UTF8 *szSetting)
 //
 const UTF8 *mux_crypt(const UTF8 *szPassword, const UTF8 *szSetting, int *piType)
 {
-    const UTF8 *pSaltField = NULL;
+    const UTF8 *pSaltField = nullptr;
     size_t nSaltField = 0;
 
     *piType = CRYPT_FAIL;
@@ -613,7 +611,7 @@ const UTF8 *mux_crypt(const UTF8 *szPassword, const UTF8 *szSetting, int *piType
     case CRYPT_CLEARTEXT:
         return szPassword;
 
-#ifdef UNIX_DIGEST
+#if defined(UNIX_DIGEST) && defined(HAVE_SHA_INIT)
     case CRYPT_P6H_XX:
         return p6h_xx_crypt(szPassword);
 #endif
@@ -756,7 +754,7 @@ void AddToPublicChannel(dbref player)
        && mudconf.public_channel_alias[0] != '\0')
     {
         do_addcom(player, player, player, 0, 0, 2,
-            mudconf.public_channel_alias, mudconf.public_channel, NULL, 0);
+            mudconf.public_channel_alias, mudconf.public_channel, nullptr, 0);
     }
 }
 
@@ -773,7 +771,7 @@ dbref create_player
     const UTF8 **pmsg
 )
 {
-    *pmsg = NULL;
+    *pmsg = nullptr;
 
     // Potentially throttle the rate of player creation.
     //
@@ -809,7 +807,7 @@ dbref create_player
     free_lbuf(pbuf);
     local_data_create(player);
     ServerEventsSinkNode *p = g_pServerEventsSinkListHead;
-    while (NULL != p)
+    while (nullptr != p)
     {
         p->pSink->data_create(player);
         p = p->pNext;
@@ -960,7 +958,7 @@ bool add_player_name(dbref player, const UTF8 *name, bool bAlias)
     player_name_entry *p = (player_name_entry *)hashfindLEN(pCased, nCased,
         &mudstate.player_htab);
 
-    if (NULL != p)
+    if (nullptr != p)
     {
         // Entry found in the hashtable.  Succeed if the numbers are already
         // correctly in the hash table.
@@ -982,7 +980,7 @@ bool add_player_name(dbref player, const UTF8 *name, bool bAlias)
         // It's an invalid entry.  Clobber it.
         //
         player_name_entry *pOrig = p;
-        p = NULL;
+        p = nullptr;
         try
         {
             p = new player_name_entry;
@@ -992,7 +990,7 @@ bool add_player_name(dbref player, const UTF8 *name, bool bAlias)
             ; // Nothing.
         }
 
-        if (NULL != p)
+        if (nullptr != p)
         {
             p->dbPlayer = player;
             p->bAlias = bAlias;
@@ -1000,13 +998,13 @@ bool add_player_name(dbref player, const UTF8 *name, bool bAlias)
             if (stat)
             {
                 delete pOrig;
-                pOrig = NULL;
+                pOrig = nullptr;
             }
         }
     }
     else
     {
-        p = NULL;
+        p = nullptr;
         try
         {
             p = new player_name_entry;
@@ -1016,7 +1014,7 @@ bool add_player_name(dbref player, const UTF8 *name, bool bAlias)
             ; // Nothing.
         }
 
-        if (NULL != p)
+        if (nullptr != p)
         {
             p->dbPlayer = player;
             p->bAlias = bAlias;
@@ -1039,7 +1037,7 @@ bool delete_player_name(dbref player, const UTF8 *name, bool bAlias)
     player_name_entry *p = (player_name_entry *)hashfindLEN(pCased, nCased,
         &mudstate.player_htab);
 
-    if (  NULL == p
+    if (  nullptr == p
        || (  Good_obj(p->dbPlayer)
           && isPlayer(p->dbPlayer)
           && (  p->dbPlayer != player
@@ -1049,7 +1047,7 @@ bool delete_player_name(dbref player, const UTF8 *name, bool bAlias)
     }
 
     delete p;
-    p = NULL;
+    p = nullptr;
     hashdeleteLEN(pCased, nCased, &mudstate.player_htab);
     return true;
 }
@@ -1059,11 +1057,11 @@ void delete_all_player_names()
 {
     player_name_entry *pne;
     for (pne = (player_name_entry *)hash_firstentry(&mudstate.player_htab);
-         NULL != pne;
+         nullptr != pne;
          pne = (player_name_entry *)hash_nextentry(&mudstate.player_htab))
     {
         delete pne;
-        pne = NULL;
+        pne = nullptr;
     }
     hashflush(&mudstate.player_htab);
 }
@@ -1075,7 +1073,7 @@ dbref lookup_player_name(UTF8 *name, bool &bAlias)
     size_t nCased;
     UTF8  *pCased = mux_strlwr(name, nCased);
     player_name_entry *p = (player_name_entry *)hashfindLEN(pCased, nCased, &mudstate.player_htab);
-    if (  NULL != p
+    if (  nullptr != p
        && Good_obj(p->dbPlayer))
     {
         thing = p->dbPlayer;
@@ -1100,7 +1098,7 @@ dbref lookup_player(dbref doer, UTF8 *name, bool check_who)
     if (NUMBER_TOKEN == name[0])
     {
         name++;
-        if (!is_integer(name, NULL))
+        if (!is_integer(name, nullptr))
         {
             return NOTHING;
         }
@@ -1168,7 +1166,7 @@ void badname_add(UTF8 *bad_name)
 {
     // Make a new node and link it in at the top.
     //
-    BADNAME *bp = NULL;
+    BADNAME *bp = nullptr;
     try
     {
         bp = new BADNAME;
@@ -1178,7 +1176,7 @@ void badname_add(UTF8 *bad_name)
         ; // Nothing.
     }
 
-    if (NULL != bp)
+    if (nullptr != bp)
     {
         bp->name = StringClone(bad_name);
         bp->next = mudstate.badname_head;
@@ -1195,7 +1193,7 @@ void badname_remove(UTF8 *bad_name)
     // Look for an exact match on the bad name and remove if found.
     //
     BADNAME *bp;
-    BADNAME *backp = NULL;
+    BADNAME *backp = nullptr;
     for (bp = mudstate.badname_head; bp; backp = bp, bp = bp->next)
     {
         if (!string_compare(bad_name, bp->name))
@@ -1209,9 +1207,9 @@ void badname_remove(UTF8 *bad_name)
                 mudstate.badname_head = bp->next;
             }
             MEMFREE(bp->name);
-            bp->name = NULL;
+            bp->name = nullptr;
             delete bp;
-            bp = NULL;
+            bp = nullptr;
             return;
         }
     }

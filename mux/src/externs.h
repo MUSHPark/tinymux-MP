@@ -1,8 +1,6 @@
 /*! \file externs.h
  * \brief Prototypes for externs not defined elsewhere.
  *
- * $Id$
- *
  */
 
 #ifndef EXTERNS_H
@@ -51,7 +49,7 @@ int  cf_modify_bits(int *, UTF8 *, void *, UINT32, dbref, UTF8 *);
 void DCL_CDECL cf_log_syntax(dbref player, __in_z UTF8 *cmd, __in_z const UTF8 *fmt, ...);
 void ValidateConfigurationDbrefs(void);
 #if defined(HAVE_IN_ADDR)
-bool MakeCanonicalIPv4(const UTF8 *str, in_addr_t *pnIP);
+bool make_canonical_IPv4(const UTF8 *str, in_addr_t *pnIP);
 #endif
 int  cf_read(void);
 void cf_init(void);
@@ -103,9 +101,6 @@ UTF8 *MakeCanonicalMailAliasDesc
     size_t *pnVisualWidth
 );
 
-#if defined(FIRANMUX)
-const UTF8 *MessageFetch(int number);
-#endif // FIRANMUX
 size_t MessageFetchSize(int number);
 void finish_mail();
 
@@ -144,7 +139,7 @@ void mux_exec(const UTF8 *pdstr, size_t nStr, UTF8 *buff, UTF8 **bufc, dbref exe
 
 inline void BufAddRef(lbuf_ref *lbufref)
 {
-    if (NULL != lbufref)
+    if (nullptr != lbufref)
     {
         lbufref->refcount++;
     }
@@ -152,13 +147,13 @@ inline void BufAddRef(lbuf_ref *lbufref)
 
 inline void BufRelease(lbuf_ref *lbufref)
 {
-    if (NULL != lbufref)
+    if (nullptr != lbufref)
     {
         lbufref->refcount--;
         if (0 == lbufref->refcount)
         {
             free_lbuf(lbufref->lbuf_ptr);
-            lbufref->lbuf_ptr = NULL;
+            lbufref->lbuf_ptr = nullptr;
             free_lbufref(lbufref);
         }
     }
@@ -166,7 +161,7 @@ inline void BufRelease(lbuf_ref *lbufref)
 
 inline void RegAddRef(reg_ref *regref)
 {
-    if (NULL != regref)
+    if (nullptr != regref)
     {
         regref->refcount++;
     }
@@ -174,14 +169,14 @@ inline void RegAddRef(reg_ref *regref)
 
 inline void RegRelease(reg_ref *regref)
 {
-    if (NULL != regref)
+    if (nullptr != regref)
     {
         regref->refcount--;
         if (0 == regref->refcount)
         {
             BufRelease(regref->lbuf);
-            regref->lbuf    = NULL;
-            regref->reg_ptr = NULL;
+            regref->lbuf    = nullptr;
+            regref->reg_ptr = nullptr;
             regref->reg_len = 0;
             free_regref(regref);
         }

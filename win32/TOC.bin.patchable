@@ -1,7 +1,7 @@
-ALPHA
-ATTACK
-CHANGES
-MODULES
+ALPHA.md
+ATTACK.md
+CHANGES.md
+MODULES.md
 docs/BACKUPS
 docs/CONFIGURATION
 docs/CONVERSION
@@ -26,9 +26,9 @@ game/data/db_unload.bat
 game/startmux.wsf
 game/text/help.txt
 game/text/wizhelp.txt
-INSTALL
-NOTES
-README
+INSTALL.md
+NOTES.md
+README.md
 readme.txt
 SGP
 src/copyright.h

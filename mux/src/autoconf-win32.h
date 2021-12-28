@@ -28,8 +28,8 @@
 /* Define to 1 if you have the `crypt' function. */
 /* #undef HAVE_CRYPT */
 
-/* define if the compiler supports basic C++11 syntax */
-#define HAVE_CXX11 1
+/* define if the compiler supports basic C++14 syntax */
+#define HAVE_CXX14 1
 
 /* Define to 1 if you have the declaration of `sys_siglist', and to 0 if you
    don't. */
@@ -63,6 +63,12 @@
 
 /* Define to 1 if you have the <errno.h> header file. */
 #define HAVE_ERRNO_H 1
+
+/* Define to 1 if you have the `EVP_MD_CTX_create' function. */
+/* #undef HAVE_EVP_MD_CTX_CREATE */
+
+/* Define to 1 if you have the `EVP_MD_CTX_new' function. */
+/* #undef HAVE_EVP_MD_CTX_NEW */
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #define HAVE_FCNTL_H 1
@@ -172,6 +178,9 @@
 /* Define if mysql exists. */
 /* #undef HAVE_MYSQL */
 
+/* Define if mysql.h exists. */
+/* #undef HAVE_MYSQL_H */
+
 /* Define to 1 if you have the `nanosleep' function. */
 /* #undef HAVE_NANOSLEEP */
 
@@ -198,6 +207,9 @@
 
 /* Define to 1 if you have the `setrlimit' function. */
 /* #undef HAVE_SETRLIMIT */
+
+/* Define to 1 if you have the `SHA_Init' function. */
+/* #define HAVE_SHA_INIT 1 */
 
 /* Define if your system has the sockaddr_in type. */
 #define HAVE_SOCKADDR_IN
@@ -359,7 +371,7 @@
 #define PACKAGE_NAME "TinyMUX"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "TinyMUX 2.12"
+#define PACKAGE_STRING "TinyMUX 2.13"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "tinymux"
@@ -368,7 +380,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.12"
+#define PACKAGE_VERSION "2.13"
 
 /* Define if calling signal with SIGCHLD when handling SIGCHLD blows chow. */
 /* #undef SIGNAL_SIGCHLD_BRAINDAMAGE */

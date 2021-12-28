@@ -1,8 +1,6 @@
 /*! \file pcre.cpp
  * \brief Perl-Compatible Regular Expressions
  *
- * $Id$
- *
  * This is a library of functions to support regular expressions whose syntax
  * and semantics are as close as possible to those of the Perl 5 language. See
  * the file doc/Tech.Notes for some information on the internals.
@@ -6810,7 +6808,7 @@ code += 1 + LINK_SIZE + skipbytes;
 
 /* Loop for each alternative branch */
 
-for (;!MuxAlarm.bAlarmed;)
+for (;!alarm_clock.alarmed;)
   {
   /* Handle a change of ims options at the start of the branch */
 
@@ -8031,7 +8029,7 @@ if ((flags & match_cbegroup) != 0)
 
 /* Now start processing the opcodes. */
 
-for (;!MuxAlarm.bAlarmed;)
+for (;!alarm_clock.alarmed;)
   {
   minimize = possessive = false;
   op = *ecode;

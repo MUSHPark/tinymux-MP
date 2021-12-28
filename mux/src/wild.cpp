@@ -1,8 +1,6 @@
 /*! \file wild.cpp
  * \brief Wildcard routines.
  *
- * $Id$
- *
  * Written by T. Alexander Popiel, 24 June 1993
  * Last modified by T. Alexander Popiel, 19 August 1993
  *
@@ -33,7 +31,7 @@ static int numargs;
 // ---------------------------------------------------------------------------
 // quick_wild: do a wildcard match, without remembering the wild data.
 //
-// This routine will cause crashes if fed NULLs instead of strings.
+// This routine will cause crashes if fed nullptrs instead of strings.
 //
 bool quick_wild(const UTF8 *tstr, const UTF8 *dstr)
 {
@@ -371,7 +369,7 @@ static bool wild1(UTF8 *tstr, UTF8 *dstr, int arg)
 // ---------------------------------------------------------------------------
 // wild: do a wildcard match, remembering the wild data.
 //
-// This routine will cause crashes if fed NULLs instead of strings.
+// This routine will cause crashes if fed nullptrs instead of strings.
 //
 // Side Effect: this routine modifies the 'arglist' and 'numargs' static
 // global variables.
@@ -387,7 +385,7 @@ bool wild(UTF8 *tstr, UTF8 *dstr, UTF8 *args[], int nargs)
     //
     for (i = 0; i < nargs; i++)
     {
-        args[i] = NULL;
+        args[i] = nullptr;
     }
 
     // Do fast match.
@@ -447,12 +445,12 @@ bool wild(UTF8 *tstr, UTF8 *dstr, UTF8 *args[], int nargs)
     //
     for (i = 0; i < nargs; i++)
     {
-        if (  args[i] != NULL
+        if (  args[i] != nullptr
            && (  !*args[i]
               || !value))
         {
             free_lbuf(args[i]);
-            args[i] = NULL;
+            args[i] = nullptr;
         }
     }
     return value;
@@ -462,7 +460,7 @@ bool wild(UTF8 *tstr, UTF8 *dstr, UTF8 *args[], int nargs)
 // wild_match: do either an order comparison or a wildcard match, remembering
 // the wild data, if wildcard match is done.
 //
-// This routine will cause crashes if fed NULLs instead of strings.
+// This routine will cause crashes if fed nullptrs instead of strings.
 //
 bool wild_match(UTF8 *tstr, const UTF8 *dstr)
 {

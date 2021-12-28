@@ -1,8 +1,6 @@
 /*! \file db.cpp
  * \brief Attribute interface, some flatfile and object routines.
  *
- * $Id$
- *
  * This file mainly has to do with attributes and objects in memory,
  * but it is somewhat bloated.  Contents now include: the list of
  * built-in attributes, fwdlist routines, Name-related routines,
@@ -33,7 +31,7 @@
 #define O_ACCMODE   (O_RDONLY|O_WRONLY|O_RDWR)
 #endif // O_ACCMODE
 
-OBJ *db = NULL;
+OBJ *db = nullptr;
 
 typedef struct atrcount ATRCOUNT;
 struct atrcount
@@ -230,13 +228,7 @@ ATTR AttrTable[] =
 #ifdef REALITY_LVLS
     {T("Rlevel"),      A_RLEVEL,   AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL},
 #endif // REALITY_LVLS
-#if defined(FIRANMUX)
-    {T("Color"),       A_COLOR,    AF_ODARK},
-    {T("Alead"),       A_ALEAD,    AF_ODARK | AF_WIZARD},
-    {T("Lead"),        A_LEAD,     AF_ODARK | AF_NOPROG | AF_WIZARD},
-    {T("Olead"),       A_OLEAD,    AF_ODARK | AF_NOPROG | AF_WIZARD},
-#endif // FIRANMUX
-    {NULL,                  0,          0}
+    {nullptr,               0,          0}
 };
 
 // The following 'special' attributes adopt invalid names to make them
@@ -248,7 +240,7 @@ ATTR AttrTableSpecial[] =
     {T("*PASSWORD"),   A_PASS,     AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL},
     {T("*PRIVILEGES"), A_PRIVS,    AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL},
     {T("*MONEY"),      A_MONEY,    AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL},
-    {NULL,                  0,          0}
+    {nullptr,               0,          0}
 };
 
 const UTF8 *aszSpecialDBRefNames[1-NOPERM] =
@@ -268,7 +260,7 @@ void fwdlist_set(dbref thing, FWDLIST *ifp)
 {
     // If fwdlist is null, clear.
     //
-    if (  NULL == ifp
+    if (  nullptr == ifp
        || ifp->count <= 0)
     {
         fwdlist_clr(thing);
@@ -278,7 +270,7 @@ void fwdlist_set(dbref thing, FWDLIST *ifp)
     // Copy input forwardlist to a correctly-sized buffer.
     //
 
-    FWDLIST *fp = NULL;
+    FWDLIST *fp = nullptr;
     try
     {
         fp = new FWDLIST;
@@ -288,9 +280,9 @@ void fwdlist_set(dbref thing, FWDLIST *ifp)
         ; // Nothing.
     }
 
-    if (NULL != fp)
+    if (nullptr != fp)
     {
-        fp->data = NULL;
+        fp->data = nullptr;
         try
         {
             fp->data = new dbref[ifp->count];
@@ -300,7 +292,7 @@ void fwdlist_set(dbref thing, FWDLIST *ifp)
             ; // Nothing.
         }
 
-        if (NULL != fp->data)
+        if (nullptr != fp->data)
         {
             for (int i = 0; i < ifp->count; i++)
             {
@@ -319,7 +311,7 @@ void fwdlist_set(dbref thing, FWDLIST *ifp)
                     delete [] xfp->data;
                 }
                 delete xfp;
-                xfp = NULL;
+                xfp = nullptr;
 
                 bDone = hashreplLEN(&thing, sizeof(thing), fp, &mudstate.fwdlist_htab);
             }
@@ -362,7 +354,7 @@ void fwdlist_clr(dbref thing)
             delete [] xfp->data;
         }
         delete xfp;
-        xfp = NULL;
+        xfp = nullptr;
 
         hashdeleteLEN(&thing, sizeof(thing), &mudstate.fwdlist_htab);
     }
@@ -374,7 +366,7 @@ void fwdlist_clr(dbref thing)
 
 FWDLIST *fwdlist_load(dbref player, UTF8 *atext)
 {
-    FWDLIST *fp = NULL;
+    FWDLIST *fp = nullptr;
     try
     {
         fp = new FWDLIST;
@@ -384,10 +376,10 @@ FWDLIST *fwdlist_load(dbref player, UTF8 *atext)
         ; // Nothing.
     }
 
-    if (NULL != fp)
+    if (nullptr != fp)
     {
         fp->count = 0;
-        fp->data = NULL;
+        fp->data = nullptr;
         try
         {
             fp->data = new dbref[LBUF_SIZE/2];
@@ -397,7 +389,7 @@ FWDLIST *fwdlist_load(dbref player, UTF8 *atext)
             ; // Nothing.
         }
 
-        if (NULL != fp->data)
+        if (nullptr != fp->data)
         {
             UTF8 *tp = alloc_lbuf("fwdlist_load.str");
             UTF8 *bp = tp;
@@ -473,13 +465,13 @@ FWDLIST *fwdlist_load(dbref player, UTF8 *atext)
             {
                 delete [] fp->data;
                 delete fp;
-                fp = NULL;
+                fp = nullptr;
             }
         }
         else
         {
             delete fp;
-            fp = NULL;
+            fp = nullptr;
         }
     }
     return fp;
@@ -525,8 +517,8 @@ bool fwdlist_ck(dbref player, dbref thing, int anum, UTF8 *atext)
         return true;
     }
 
-    FWDLIST *fp = NULL;
-    if (  NULL != atext
+    FWDLIST *fp = nullptr;
+    if (  nullptr != atext
        && '\0' != atext[0])
     {
         fp = fwdlist_load(player, atext);
@@ -537,24 +529,24 @@ bool fwdlist_ck(dbref player, dbref thing, int anum, UTF8 *atext)
     fwdlist_set(thing, fp);
     int count = fwdlist_rewrite(fp, atext);
 
-    if (NULL != fp)
+    if (nullptr != fp)
     {
-        if (NULL != fp->data)
+        if (nullptr != fp->data)
         {
             delete [] fp->data;
         }
         delete fp;
-        fp = NULL;
+        fp = nullptr;
     }
 
     return (  count > 0
-           || NULL == atext
+           || nullptr == atext
            || '\0' == atext[0]);
 }
 
 FWDLIST *fwdlist_get(dbref thing)
 {
-    static FWDLIST *fp = NULL;
+    static FWDLIST *fp = nullptr;
     if (mudstate.bStandAlone)
     {
         dbref aowner;
@@ -677,7 +669,7 @@ const UTF8 *Moniker(dbref thing)
         &nMoniker);
     const UTF8 *pPureMoniker = (UTF8 *)ConvertToAscii(strip_color(pMoniker));
 
-    const UTF8 *pReturn = NULL;
+    const UTF8 *pReturn = nullptr;
     static UTF8 tbuff[LBUF_SIZE];
     if (strcmp((char *)pPureNameCopy, (char *)pPureMoniker) == 0)
     {
@@ -749,15 +741,15 @@ void free_Names(OBJ *p)
         {
             if (p->name == p->purename)
             {
-                p->purename = NULL;
+                p->purename = nullptr;
             }
             if (p->name == p->moniker)
             {
-                p->moniker = NULL;
+                p->moniker = nullptr;
             }
         }
         MEMFREE(p->name);
-        p->name = NULL;
+        p->name = nullptr;
     }
 #endif // !MEMORY_BASED
 
@@ -766,12 +758,12 @@ void free_Names(OBJ *p)
         if (p->purename)
         {
             MEMFREE(p->purename);
-            p->purename = NULL;
+            p->purename = nullptr;
         }
         if (p->moniker)
         {
             MEMFREE(p->moniker);
-            p->moniker = NULL;
+            p->moniker = nullptr;
         }
     }
 }
@@ -782,7 +774,7 @@ void s_Name(dbref thing, const UTF8 *s)
     free_Names(&db[thing]);
     atr_add_raw(thing, A_NAME, s);
 #ifndef MEMORY_BASED
-    if (NULL != s)
+    if (nullptr != s)
     {
         db[thing].name = StringClone(s);
     }
@@ -796,13 +788,13 @@ void free_Moniker(OBJ *p)
 #ifndef MEMORY_BASED
         if (p->name == p->moniker)
         {
-            p->moniker = NULL;
+            p->moniker = nullptr;
         }
 #endif // !MEMORY_BASED
         if (p->moniker)
         {
             MEMFREE(p->moniker);
-            p->moniker = NULL;
+            p->moniker = nullptr;
         }
     }
 }
@@ -847,14 +839,14 @@ void do_attribute
     //
     size_t nName;
     bool bValid = false;
-    ATTR *va = NULL;
+    ATTR *va = nullptr;
     UTF8 *pName = MakeCanonicalAttributeName(aname, &nName, &bValid);
     if (bValid)
     {
         va = (ATTR *)vattr_find_LEN(pName, nName);
     }
 
-    if (NULL == va)
+    if (nullptr == va)
     {
         notify(executor, T("No such user-named attribute."));
         return;
@@ -880,7 +872,7 @@ void do_attribute
         mux_strtok_ctl(&tts, T(" "));
         sp = mux_strtok_parse(&tts);
         success = false;
-        while (sp != NULL)
+        while (sp != nullptr)
         {
             // Check for negation.
             //
@@ -943,7 +935,7 @@ void do_attribute
             }
             pName = MakeCanonicalAttributeName(value, &nName, &bValid);
             if (  !bValid
-               || vattr_rename_LEN(OldName, nOldName, pName, nName) == NULL)
+               || vattr_rename_LEN(OldName, nOldName, pName, nName) == nullptr)
             {
                 notify(executor, T("Attribute rename failed."));
             }
@@ -1126,12 +1118,12 @@ UTF8 *MakeCanonicalAttributeName(const UTF8 *pName_arg, size_t *pnName, bool *pb
     static UTF8 Buffer[SBUF_SIZE];
     const UTF8 *pName = pName_arg;
 
-    if (  NULL == pName
+    if (  nullptr == pName
        || !mux_isattrnameinitial(pName))
     {
         *pnName = 0;
         *pbValid = false;
-        return NULL;
+        return nullptr;
     }
     size_t nLeft = SBUF_SIZE-1;
     UTF8 *p = Buffer;
@@ -1150,7 +1142,7 @@ UTF8 *MakeCanonicalAttributeName(const UTF8 *pName_arg, size_t *pnName, bool *pb
         nLeft -= n;
         bool bXor;
         const string_desc *qDesc = mux_toupper(pName, bXor);
-        if (NULL == qDesc)
+        if (nullptr == qDesc)
         {
             while (n--)
             {
@@ -1214,11 +1206,11 @@ UTF8 *MakeCanonicalAttributeName(const UTF8 *pName_arg, size_t *pnName, bool *pb
 //
 UTF8 *MakeCanonicalAttributeCommand(const UTF8 *pName, size_t *pnName, bool *pbValid)
 {
-    if (NULL == pName)
+    if (nullptr == pName)
     {
         *pnName = 0;
         *pbValid = false;
-        return NULL;
+        return nullptr;
     }
 
     static UTF8 Buffer[SBUF_SIZE];
@@ -1234,7 +1226,7 @@ UTF8 *MakeCanonicalAttributeCommand(const UTF8 *pName, size_t *pnName, bool *pbV
         nLeft -= n;
         bool bXor;
         const string_desc *qDesc = mux_tolower(pName, bXor);
-        if (NULL == qDesc)
+        if (nullptr == qDesc)
         {
             while (n--)
             {
@@ -1322,13 +1314,13 @@ ATTR *atr_str(const UTF8 *s)
     UTF8 *buff = MakeCanonicalAttributeName(s, &nBuffer, &bValid);
     if (!bValid)
     {
-        return NULL;
+        return nullptr;
     }
 
     // Look for a predefined attribute.
     //
     ATTR *a = (ATTR *)hashfindLEN(buff, nBuffer, &mudstate.attr_name_htab);
-    if (a != NULL)
+    if (a != nullptr)
     {
         return a;
     }
@@ -1376,7 +1368,7 @@ int GrowFiftyPercent(int x, int low, int high)
  * anum_extend: Grow the attr num lookup table.
  */
 
-ATTR **anum_table = NULL;
+ATTR **anum_table = nullptr;
 int anum_alc_top = -1;
 
 void anum_extend(int newtop)
@@ -1405,14 +1397,14 @@ void anum_extend(int newtop)
 
     int i;
     ATTR **anum_table2 = (ATTR **) MEMALLOC((newtop + 1) * sizeof(ATTR *));
-    if (NULL != anum_table2)
+    if (nullptr != anum_table2)
     {
         for (i = anum_alc_top + 1; i <= newtop; i++)
         {
-            anum_table2[i] = NULL;
+            anum_table2[i] = nullptr;
         }
 
-        if (NULL != anum_table)
+        if (nullptr != anum_table)
         {
             for (i = 0; i <= anum_alc_top; i++)
             {
@@ -1438,7 +1430,7 @@ ATTR *atr_num(int anum)
     if (  anum < 0
        || anum_alc_top < anum)
     {
-        return NULL;
+        return nullptr;
     }
     return anum_get(anum);
 }
@@ -1755,7 +1747,7 @@ static void al_extend(unsigned char **buffer, size_t *bufsiz, size_t len, bool c
                 memcpy(tbuff, *buffer, *bufsiz);
             }
             MEMFREE(*buffer);
-            *buffer = NULL;
+            *buffer = nullptr;
         }
         *buffer = tbuff;
         *bufsiz = newsize;
@@ -2060,7 +2052,7 @@ void atr_clr(dbref thing, int atr)
         else // (list[mid].number == atr)
         {
             MEMFREE(list[mid].data);
-            list[mid].data = NULL;
+            list[mid].data = nullptr;
             db[thing].nALUsed--;
             if (mid != db[thing].nALUsed)
             {
@@ -2378,7 +2370,7 @@ const UTF8 *atr_get_raw_LEN(dbref thing, int atr, size_t *pLen)
 {
     if (!Good_obj(thing))
     {
-        return NULL;
+        return nullptr;
     }
 
     // Binary search for the attribute.
@@ -2386,7 +2378,7 @@ const UTF8 *atr_get_raw_LEN(dbref thing, int atr, size_t *pLen)
     ATRLIST *list = db[thing].pALHead;
     if (!list)
     {
-        return NULL;
+        return nullptr;
     }
 
     int lo = 0;
@@ -2410,7 +2402,7 @@ const UTF8 *atr_get_raw_LEN(dbref thing, int atr, size_t *pLen)
         }
     }
     *pLen = 0;
-    return NULL;
+    return nullptr;
 }
 
 #else // MEMORY_BASED
@@ -2482,7 +2474,7 @@ bool atr_get_info(dbref thing, int atr, dbref *owner, int *flags)
         *flags = 0;
         return false;
     }
-    atr_decode_LEN(buff, nLen, NULL, thing, owner, flags, &nLen);
+    atr_decode_LEN(buff, nLen, nullptr, thing, owner, flags, &nLen);
     return true;
 }
 
@@ -2554,7 +2546,7 @@ bool atr_pget_info(dbref thing, int atr, dbref *owner, int *flags)
         const UTF8 *buff = atr_get_raw_LEN(parent, atr, &nLen);
         if (buff && *buff)
         {
-            atr_decode_LEN(buff, nLen, NULL, thing, owner, flags, &nLen);
+            atr_decode_LEN(buff, nLen, nullptr, thing, owner, flags, &nLen);
             if ((lev == 0) || !(*flags & AF_PRIVATE))
             {
                 return true;
@@ -2583,7 +2575,7 @@ void atr_free(dbref thing)
     {
         MEMFREE(db[thing].pALHead);
     }
-    db[thing].pALHead  = NULL;
+    db[thing].pALHead  = nullptr;
     db[thing].nALAlloc = 0;
     db[thing].nALUsed  = 0;
 #else // MEMORY_BASED
@@ -2700,7 +2692,7 @@ int atr_next(UTF8 **attrp)
         if (atr->count >= db[atr->thing].nALUsed)
         {
             MEMFREE(atr);
-            atr = NULL;
+            atr = nullptr;
             return 0;
         }
         atr->count++;
@@ -2731,7 +2723,7 @@ void atr_push(void)
     new_alist->len = mudstate.iter_alist.len;
     new_alist->next = mudstate.iter_alist.next;
 
-    mudstate.iter_alist.data = NULL;
+    mudstate.iter_alist.data = nullptr;
     mudstate.iter_alist.len = 0;
     mudstate.iter_alist.next = new_alist;
 #endif // !MEMORY_BASED
@@ -2745,7 +2737,7 @@ void atr_pop(void)
     if (mudstate.iter_alist.data)
     {
         MEMFREE(mudstate.iter_alist.data);
-        mudstate.iter_alist.data = NULL;
+        mudstate.iter_alist.data = nullptr;
     }
     if (old_alist)
     {
@@ -2757,9 +2749,9 @@ void atr_pop(void)
     }
     else
     {
-        mudstate.iter_alist.data = NULL;
+        mudstate.iter_alist.data = nullptr;
         mudstate.iter_alist.len = 0;
-        mudstate.iter_alist.next = NULL;
+        mudstate.iter_alist.next = nullptr;
     }
 #endif // !MEMORY_BASED
 }
@@ -2816,7 +2808,7 @@ int atr_head(dbref thing, unsigned char **attrp)
 attr_info::attr_info(void)
 {
     m_object    = NOTHING;
-    m_attr      = NULL;
+    m_attr      = nullptr;
     m_bValid    = false;
     m_aowner    = NOTHING;
     m_aflags    = 0;
@@ -2831,13 +2823,13 @@ attr_info::attr_info(dbref object, ATTR *attr)
 
     m_object    = object;
     m_attr      = attr;
-    m_bValid    = (Good_obj(object) && (NULL != attr));
+    m_bValid    = (Good_obj(object) && (nullptr != attr));
 }
 
 attr_info::attr_info(dbref executor, const UTF8 *pTarget, bool bCreate, bool bDefaultMe)
 {
     m_object    = NOTHING;
-    m_attr      = NULL;
+    m_attr      = nullptr;
     m_bValid    = false;
     m_aowner    = NOTHING;
     m_aflags    = 0;
@@ -2847,7 +2839,7 @@ attr_info::attr_info(dbref executor, const UTF8 *pTarget, bool bCreate, bool bDe
     {
         return;
     }
-    const UTF8 *pAttrName = NULL;
+    const UTF8 *pAttrName = nullptr;
     bool bHaveObject = parse_thing_slash(executor, pTarget, &pAttrName, &m_object);
     if (!bHaveObject)
     {
@@ -2872,7 +2864,7 @@ attr_info::attr_info(dbref executor, const UTF8 *pTarget, bool bCreate, bool bDe
         {
             m_attr = atr_str(pAttrName);
         }
-        m_bValid = (m_attr != NULL);
+        m_bValid = (m_attr != nullptr);
     }
 }
 
@@ -2920,7 +2912,7 @@ static void initialize_objects(dbref first, dbref last)
         s_Zone(thing, NOTHING);
         s_Parent(thing, NOTHING);
 #ifdef DEPRECATED
-        s_Stack(thing, NULL);
+        s_Stack(thing, nullptr);
 #endif // DEPRECATED
         db[thing].cpu_time_used.Set100ns(0);
         db[thing].tThrottleExpired.Set100ns(0);
@@ -2929,14 +2921,14 @@ static void initialize_objects(dbref first, dbref last)
         s_ThRefs(thing, 0);
 
 #ifdef MEMORY_BASED
-        db[thing].pALHead  = NULL;
+        db[thing].pALHead  = nullptr;
         db[thing].nALAlloc = 0;
         db[thing].nALUsed  = 0;
 #else
-        db[thing].name = NULL;
+        db[thing].name = nullptr;
 #endif // MEMORY_BASED
-        db[thing].purename = NULL;
-        db[thing].moniker = NULL;
+        db[thing].purename = nullptr;
+        db[thing].moniker = nullptr;
     }
 }
 
@@ -3021,7 +3013,7 @@ void db_grow(dbref newtop)
         initialize_objects(0, SIZE_HACK);
     }
     db = newdb + SIZE_HACK;
-    newdb = NULL;
+    newdb = nullptr;
 
     initialize_objects(mudstate.db_top, newtop);
     mudstate.db_top = newtop;
@@ -3052,13 +3044,13 @@ void db_free(void)
     }
 #endif
 
-    if (db != NULL)
+    if (db != nullptr)
     {
         db -= SIZE_HACK;
         char *cp = (char *)db;
         MEMFREE(cp);
-        cp = NULL;
-        db = NULL;
+        cp = nullptr;
+        db = nullptr;
     }
     mudstate.db_top = 0;
     mudstate.db_size = 0;
@@ -3217,7 +3209,7 @@ void *getstring_noalloc(FILE *f, bool new_strings, size_t *pnBuffer)
             // Fetch up to and including the next LF.
             //
             UTF8 *pInput = pOutput + 6;
-            if (fgets((char *)pInput, static_cast<int>(nBufferLeft), f) == NULL)
+            if (fgets((char *)pInput, static_cast<int>(nBufferLeft), f) == nullptr)
             {
                 // EOF or ERROR.
                 //
@@ -3339,7 +3331,7 @@ void *getstring_noalloc(FILE *f, bool new_strings, size_t *pnBuffer)
         {
             // Fetch up to and including the next LF.
             //
-            if (fgets((char *)p, LBUF_SIZE, f) == NULL)
+            if (fgets((char *)p, LBUF_SIZE, f) == nullptr)
             {
                 // EOF or ERROR.
                 //
@@ -3456,7 +3448,7 @@ void putstring(FILE *f, const UTF8 *pRaw)
 int getref(FILE *f)
 {
     static UTF8 buf[SBUF_SIZE];
-    if (NULL != fgets((char *)buf, sizeof(buf), f))
+    if (nullptr != fgets((char *)buf, sizeof(buf), f))
     {
         return mux_atol(buf);
     }
@@ -3493,7 +3485,7 @@ void free_boolexp(BOOLEXP *b)
     case BOOLEXP_ATR:
     case BOOLEXP_EVAL:
         MEMFREE(b->sub1);
-        b->sub1 = NULL;
+        b->sub1 = nullptr;
         free_bool(b);
         break;
     }
@@ -3605,7 +3597,7 @@ void ReleaseAllResources(dbref obj)
     }
     if (mudconf.have_mailer)
     {
-        do_mail_clear(obj, NULL);
+        do_mail_clear(obj, nullptr);
         do_mail_purge(obj);
         malias_cleanup(obj);
     }
@@ -3623,13 +3615,13 @@ void dump_restart_db(void)
 
     mux_assert(mux_fopen(&f, T("restart.db"), T("wb")));
     mux_fprintf(f, T("+V%d\n"), version);
-    putref(f, nMainGamePorts);
-    for (int i = 0; i < nMainGamePorts; i++)
+    putref(f, num_main_game_ports);
+    for (int i = 0; i < num_main_game_ports; i++)
     {
-        putref(f, aMainGamePorts[i].msa.Port());
-        putref(f, aMainGamePorts[i].socket);
+        putref(f, main_game_ports[i].msa.port());
+        putref(f, main_game_ports[i].socket);
 #ifdef UNIX_SSL
-        putref(f, aMainGamePorts[i].fSSL ? 1 : 0);
+        putref(f, main_game_ports[i].fSSL ? 1 : 0);
 #else
         putref(f, 0);
 #endif
@@ -3640,7 +3632,7 @@ void dump_restart_db(void)
     putref(f, mudstate.restart_count);
     DESC_ITER_ALL(d)
     {
-        putref(f, d->descriptor);
+        putref(f, d->socket);
         putref(f, d->flags);
         putref(f, d->connected_at.ReturnSeconds());
         putref(f, d->command_count);
@@ -3696,29 +3688,29 @@ void load_restart_db(void)
         // Version 3 started on 2007-MAR-09
         // Version 4 started on 2007-AUG-12
         //
-        nMainGamePorts = getref(f);
-        for (int i = 0; i < nMainGamePorts; i++)
+        num_main_game_ports = getref(f);
+        for (int i = 0; i < num_main_game_ports; i++)
         {
             unsigned short usPort = getref(f);
-            aMainGamePorts[i].socket = getref(f);
-            socklen_t n = aMainGamePorts[i].msa.maxaddrlen();
-            if (  0 != getsockname(aMainGamePorts[i].socket, aMainGamePorts[i].msa.sa(), &n)
-               || usPort != aMainGamePorts[i].msa.Port())
+            main_game_ports[i].socket = getref(f);
+            socklen_t n = main_game_ports[i].msa.maxaddrlen();
+            if (  0 != getsockname(main_game_ports[i].socket, main_game_ports[i].msa.sa(), &n)
+               || usPort != main_game_ports[i].msa.port())
             {
                 mux_assert(0);
             }
 
 #if defined(UNIX_NETWORKING_SELECT)
-            if (maxd <= aMainGamePorts[i].socket)
+            if (maxd <= main_game_ports[i].socket)
             {
-                maxd = aMainGamePorts[i].socket + 1;
+                maxd = main_game_ports[i].socket + 1;
             }
 #endif // UNIX_NETWORKING_SELECT
 
             if (3 <= version)
             {
 #ifdef UNIX_SSL
-                aMainGamePorts[i].fSSL = (0 != getref(f));
+                main_game_ports[i].fSSL = (0 != getref(f));
 #else
                 // Eat meaningless field.
                 (void)getref(f);
@@ -3734,7 +3726,7 @@ void load_restart_db(void)
         //
         mux_assert(0);
     }
-    DebugTotalSockets += nMainGamePorts;
+    DebugTotalSockets += num_main_game_ports;
 
     mudstate.start_time.SetSeconds(getref(f));
 
@@ -3766,7 +3758,7 @@ void load_restart_db(void)
         ndescriptors++;
         DebugTotalSockets++;
         d = alloc_desc("restart");
-        d->descriptor = val;
+        d->socket = val;
         d->flags = getref(f);
         d->connected_at.SetSeconds(getref(f));
         d->command_count = getref(f);
@@ -3783,10 +3775,10 @@ void load_restart_db(void)
             d->nvt_us_state[i] = OPTION_NO;
         }
         d->raw_codepoint_length = 0;
-        d->ttype = NULL;
+        d->ttype = nullptr;
         d->encoding = mudconf.default_charset;
 #ifdef UNIX_SSL
-        d->ssl_session = NULL;
+        d->ssl_session = nullptr;
 #endif
         if (3 <= version)
         {
@@ -3846,7 +3838,7 @@ void load_restart_db(void)
             }
             else
             {
-                d->output_prefix = NULL;
+                d->output_prefix = nullptr;
             }
 
             // Output Suffix
@@ -3859,7 +3851,7 @@ void load_restart_db(void)
             }
             else
             {
-                d->output_suffix = NULL;
+                d->output_suffix = nullptr;
             }
 
             // Host address.
@@ -3893,7 +3885,7 @@ void load_restart_db(void)
             }
             else
             {
-                d->output_prefix = NULL;
+                d->output_prefix = nullptr;
             }
 
             // Output Suffix
@@ -3907,7 +3899,7 @@ void load_restart_db(void)
             }
             else
             {
-                d->output_suffix = NULL;
+                d->output_suffix = nullptr;
             }
 
             // Host address.
@@ -3932,19 +3924,19 @@ void load_restart_db(void)
         d->output_size = 0;
         d->output_tot = 0;
         d->output_lost = 0;
-        d->output_head = NULL;
-        d->output_tail = NULL;
-        d->input_head = NULL;
-        d->input_tail = NULL;
+        d->output_head = nullptr;
+        d->output_tail = nullptr;
+        d->input_head = nullptr;
+        d->input_tail = nullptr;
         d->input_size = 0;
         d->input_tot = 0;
         d->input_lost = 0;
-        d->raw_input = NULL;
-        d->raw_input_at = NULL;
+        d->raw_input = nullptr;
+        d->raw_input_at = nullptr;
         d->nOption = 0;
         d->quota = mudconf.cmd_quota_max;
-        d->program_data = NULL;
-        d->hashnext = NULL;
+        d->program_data = nullptr;
+        d->hashnext = nullptr;
 
         if (descriptor_list)
         {
@@ -3955,7 +3947,7 @@ void load_restart_db(void)
             }
             d->prev = &p->next;
             p->next = d;
-            d->next = NULL;
+            d->next = nullptr;
         }
         else
         {
@@ -3965,9 +3957,9 @@ void load_restart_db(void)
         }
 
 #if defined(UNIX_NETWORKING_SELECT)
-        if (maxd <= d->descriptor)
+        if (maxd <= d->socket)
         {
-            maxd = d->descriptor + 1;
+            maxd = d->socket + 1;
         }
 #endif // UNIX_NETWORKING_SELECT
 
@@ -4001,14 +3993,14 @@ int ReplaceFile(UTF8 *old_name, UTF8 *new_name)
 {
     size_t nNewName;
     UTF16 *pNewName = ConvertFromUTF8ToUTF16(new_name, &nNewName);
-    if (NULL == pNewName)
+    if (nullptr == pNewName)
     {
         return -1;
     }
 
     size_t n = (nNewName+1) * sizeof(UTF16);
     UTF16 *p = (UTF16 *)MEMALLOC(n);
-    if (NULL == p)
+    if (nullptr == p)
     {
         return -1;
     }
@@ -4017,7 +4009,7 @@ int ReplaceFile(UTF8 *old_name, UTF8 *new_name)
 
     size_t nOldName;
     UTF16 *pOldName = ConvertFromUTF8ToUTF16(old_name, &nOldName);
-    if (NULL == pOldName)
+    if (nullptr == pOldName)
     {
         MEMFREE(pNewName);
         return -1;
@@ -4042,7 +4034,7 @@ void RemoveFile(UTF8 *name)
 {
     size_t nNewName;
     UTF16 *pFileToDelete = ConvertFromUTF8ToUTF16(name, &nNewName);
-    if (NULL != pFileToDelete)
+    if (nullptr != pFileToDelete)
     {
         DeleteFile(pFileToDelete);
     }

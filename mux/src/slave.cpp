@@ -1,8 +1,6 @@
 /*! \file slave.cpp
  * \brief This slave does iptoname conversions.
  *
- * $Id$
- *
  * The philosophy is to keep this program as simple/small as possible.  It
  * routinely performs non-vfork forks()s, so the conventional wisdom is that
  * the smaller it is, the faster it goes.  However, with modern memory
@@ -80,11 +78,11 @@ int query(char *ip)
 
     struct addrinfo *servinfo;
     char host[MAX_STRING];
-    if (0 == getaddrinfo(ip, NULL, &hints, &servinfo))
+    if (0 == getaddrinfo(ip, nullptr, &hints, &servinfo))
     {
-        for (struct addrinfo *p = servinfo; NULL != p; p = p->ai_next)
+        for (struct addrinfo *p = servinfo; nullptr != p; p = p->ai_next)
         {
-            if (0 == getnameinfo(p->ai_addr, p->ai_addrlen, host, sizeof(host), NULL, 0, NI_NUMERICSERV))
+            if (0 == getnameinfo(p->ai_addr, p->ai_addrlen, host, sizeof(host), nullptr, 0, NI_NUMERICSERV))
             {
                 pHName = host;
                 break;
@@ -107,7 +105,7 @@ int query(char *ip)
 
 #if defined(HAVE_GETHOSTBYADDR)
     struct hostent *hp = gethostbyaddr((char *) &addr, sizeof(addr), AF_INET);
-    if (  NULL != hp
+    if (  nullptr != hp
        && strlen(hp->h_name) < MAX_STRING)
     {
         pHName = hp->h_name;
@@ -159,7 +157,7 @@ void child_signal(int iSig)
 {
     // Collect the children.
     //
-    while (waitpid(0, NULL, WNOHANG) > 0)
+    while (waitpid(0, nullptr, WNOHANG) > 0)
     {
         int nChildren = nChildrenStarted - nChildrenEndedSIGCHLD
             - nChildrenEndedMain;
@@ -245,7 +243,7 @@ int main(int argc, char *argv[])
 
         // Collect the children.
         //
-        while (waitpid(0, NULL, (nChildren < MAX_CHILDREN) ? WNOHANG : 0) > 0)
+        while (waitpid(0, nullptr, (nChildren < MAX_CHILDREN) ? WNOHANG : 0) > 0)
         {
             if (0 < nChildren)
             {

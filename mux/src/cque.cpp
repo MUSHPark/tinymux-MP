@@ -1,8 +1,6 @@
 /*! \file cque.cpp
  * \brief Commands and functions for manipulating the command queue.
  *
- * $Id$
- *
  * This forms the upper-level command list queue, and includes timed commands
  * and semaphores.  The lower-level task implementation is found in timer.cpp.
  */
@@ -12,7 +10,7 @@
 #include "config.h"
 #include "externs.h"
 
-#include <signal.h>
+#include <csignal>
 
 #include "attrs.h"
 #include "command.h"
@@ -31,7 +29,7 @@ static CLinearTimeDelta GetProcessorUsage(void)
     FILETIME ftExit;
     FILETIME ftKernel;
     FILETIME ftUser;
-    GetProcessTimes(hGameProcess, &ftCreate, &ftExit, &ftKernel, &ftUser);
+    GetProcessTimes(game_process_handle, &ftCreate, &ftExit, &ftKernel, &ftUser);
     ltd.Set100ns(*(INT64 *)(&ftUser));
 
 #endif // WINDOWS_PROCESSES
@@ -104,20 +102,20 @@ static void Task_RunQueueEntry(void *pEntry, int iUnused)
                 if (mudstate.global_regs[i])
                 {
                     RegRelease(mudstate.global_regs[i]);
-                    mudstate.global_regs[i] = NULL;
+                    mudstate.global_regs[i] = nullptr;
                 }
                 mudstate.global_regs[i] = point->scr[i];
-                point->scr[i] = NULL;
+                point->scr[i] = nullptr;
             }
 
 #if defined(STUB_SLAVE)
-            if (NULL != mudstate.pResultsSet)
+            if (nullptr != mudstate.pResultsSet)
             {
                 mudstate.pResultsSet->Release();
-                mudstate.pResultsSet = NULL;
+                mudstate.pResultsSet = nullptr;
             }
             mudstate.pResultsSet = point->pResultsSet;
-            point->pResultsSet = NULL;
+            point->pResultsSet = nullptr;
             mudstate.iRow = point->iRow;
 #endif // STUB_SLAVE
 
@@ -162,7 +160,7 @@ static void Task_RunQueueEntry(void *pEntry, int iUnused)
 
                     CLinearTimeAbsolute ltaBegin;
                     ltaBegin.GetUTC();
-                    MuxAlarm.Set(mudconf.max_cmdsecs);
+                    alarm_clock.set(mudconf.max_cmdsecs);
                     CLinearTimeDelta ltdUsageBegin = GetProcessorUsage();
 
                     UTF8 *log_cmdbuf = process_command(executor, point->caller,
@@ -171,7 +169,7 @@ static void Task_RunQueueEntry(void *pEntry, int iUnused)
 
                     CLinearTimeAbsolute ltaEnd;
                     ltaEnd.GetUTC();
-                    if (MuxAlarm.bAlarmed)
+                    if (alarm_clock.alarmed)
                     {
                         notify(executor, T("GAME: Expensive activity abbreviated."));
                         s_Flags(point->enactor, FLAG_WORD1, Flags(point->enactor) | HALT);
@@ -179,7 +177,7 @@ static void Task_RunQueueEntry(void *pEntry, int iUnused)
                         halt_que(point->enactor, NOTHING);
                         halt_que(executor, NOTHING);
                     }
-                    MuxAlarm.Clear();
+                    alarm_clock.clear();
 
                     CLinearTimeDelta ltdUsageEnd = GetProcessorUsage();
                     CLinearTimeDelta ltd = ltdUsageEnd - ltdUsageBegin;
@@ -205,14 +203,14 @@ static void Task_RunQueueEntry(void *pEntry, int iUnused)
                 if (mudstate.pout)
                 {
                     free_lbuf(mudstate.pout);
-                    mudstate.pout = NULL;
+                    mudstate.pout = nullptr;
                 }
                 if (mudstate.poutnew)
                 {
                     *mudstate.poutbufc = '\0';
                     mudstate.pout = mudstate.poutnew;
-                    mudstate.poutnew  = NULL;
-                    mudstate.poutbufc = NULL;
+                    mudstate.poutnew  = nullptr;
+                    mudstate.poutbufc = nullptr;
                 }
             }
 
@@ -221,7 +219,7 @@ static void Task_RunQueueEntry(void *pEntry, int iUnused)
             if (mudstate.pout)
             {
                 free_lbuf(mudstate.pout);
-                mudstate.pout = NULL;
+                mudstate.pout = nullptr;
             }
             mudstate.pipe_nest_lev = 0;
             mudstate.inpipe = false;
@@ -234,27 +232,27 @@ static void Task_RunQueueEntry(void *pEntry, int iUnused)
         if (point->scr[i])
         {
             RegRelease(point->scr[i]);
-            point->scr[i] = NULL;
+            point->scr[i] = nullptr;
         }
 
         if (mudstate.global_regs[i])
         {
             RegRelease(mudstate.global_regs[i]);
-            mudstate.global_regs[i] = NULL;
+            mudstate.global_regs[i] = nullptr;
         }
     }
 
 #if defined(STUB_SLAVE)
     mudstate.iRow = RS_TOP;
-    if (NULL != mudstate.pResultsSet)
+    if (nullptr != mudstate.pResultsSet)
     {
         mudstate.pResultsSet->Release();
-        mudstate.pResultsSet = NULL;
+        mudstate.pResultsSet = nullptr;
     }
 #endif // STUB_SLAVE
 
     MEMFREE(point->text);
-    point->text = NULL;
+    point->text = nullptr;
     free_qentry(point);
 }
 
@@ -340,12 +338,12 @@ static int CallBack_HaltQueue(PTASK_RECORD p)
                 if (point->scr[i])
                 {
                     RegRelease(point->scr[i]);
-                    point->scr[i] = NULL;
+                    point->scr[i] = nullptr;
                 }
             }
 
             MEMFREE(point->text);
-            point->text = NULL;
+            point->text = nullptr;
             free_qentry(point);
             return IU_REMOVE_TASK;
         }
@@ -491,12 +489,12 @@ static int CallBack_NotifySemaphoreDrainOrAll(PTASK_RECORD p)
                     if (point->scr[i])
                     {
                         RegRelease(point->scr[i]);
-                        point->scr[i] = NULL;
+                        point->scr[i] = nullptr;
                     }
                 }
 
                 MEMFREE(point->text);
-                point->text = NULL;
+                point->text = nullptr;
                 free_qentry(point);
 
                 return IU_REMOVE_TASK;
@@ -723,7 +721,7 @@ static BQUE *setup_que
     //
     if (Halted(executor))
     {
-        return NULL;
+        return nullptr;
     }
 
     // Make sure executor can afford to do it.
@@ -736,7 +734,7 @@ static BQUE *setup_que
     if (!payfor(executor, a))
     {
         notify(Owner(executor), T("Not enough money to queue command."));
-        return NULL;
+        return nullptr;
     }
 
     // Wizards and their objs may queue up to db_top+1 cmds. Players are
@@ -754,7 +752,7 @@ static BQUE *setup_que
         // Halt also means no command execution allowed.
         //
         s_Halted(executor);
-        return NULL;
+        return nullptr;
     }
 
     // We passed all the tests.
@@ -789,7 +787,7 @@ static BQUE *setup_que
     // Create the qeue entry and load the save string.
     //
     BQUE *tmp = alloc_qentry("setup_que.qblock");
-    tmp->comm = NULL;
+    tmp->comm = nullptr;
 
     UTF8 *tptr = tmp->text = (UTF8 *)MEMALLOC(tlen);
     ISOUTOFMEMORY(tptr);
@@ -811,13 +809,13 @@ static BQUE *setup_que
         }
         else
         {
-            tmp->env[a] = NULL;
+            tmp->env[a] = nullptr;
         }
     }
 
     for ( ; a < NUM_ENV_VARS; a++)
     {
-        tmp->env[a] = NULL;
+        tmp->env[a] = nullptr;
     }
 
     if (sargs)
@@ -835,14 +833,14 @@ static BQUE *setup_que
     {
         for (a = 0; a < MAX_GLOBAL_REGS; a++)
         {
-            tmp->scr[a] = NULL;
+            tmp->scr[a] = nullptr;
         }
     }
 
 #if defined(STUB_SLAVE)
     tmp->iRow = mudstate.iRow;
     tmp->pResultsSet = mudstate.pResultsSet;
-    if (NULL != mudstate.pResultsSet)
+    if (nullptr != mudstate.pResultsSet)
     {
         mudstate.pResultsSet->AddRef();
     }
@@ -941,7 +939,7 @@ void wait_que
 #if defined(STUB_SLAVE)
 bool   QueryComplete_bDone   = false;
 UINT32 QueryComplete_hQuery  = 0;
-CResultsSet *QueryComplete_prsResultsSet = NULL;
+CResultsSet *QueryComplete_prsResultsSet = nullptr;
 
 static int CallBack_QueryComplete(PTASK_RECORD p)
 {
@@ -980,7 +978,7 @@ static int CallBack_QueryComplete(PTASK_RECORD p)
 //
 void query_complete(UINT32 hQuery, UINT32 iError, CResultsSet *prsResultsSet)
 {
-    if (NULL != prsResultsSet)
+    if (nullptr != prsResultsSet)
     {
         prsResultsSet->SetError(iError);
     }
@@ -989,7 +987,7 @@ void query_complete(UINT32 hQuery, UINT32 iError, CResultsSet *prsResultsSet)
     QueryComplete_hQuery  = hQuery;
     QueryComplete_prsResultsSet = prsResultsSet;
     scheduler.TraverseUnordered(CallBack_QueryComplete);
-    QueryComplete_prsResultsSet = NULL;
+    QueryComplete_prsResultsSet = nullptr;
 }
 #endif // STUB_SLAVE
 
@@ -1014,13 +1012,13 @@ void sql_que
     static UINT32 next_handle = 0;
 
     if (  !(mudconf.control_flags & CF_INTERP)
-       || NULL == mudstate.pIQueryControl)
+       || nullptr == mudstate.pIQueryControl)
     {
         return;
     }
 
     ATTR *pattr = atr_num(attr);
-    if (NULL == pattr)
+    if (nullptr == pattr)
     {
         return;
     }
@@ -1189,7 +1187,7 @@ void do_query
 {
     UNUSED_PARAMETER(nargs);
 
-    if (NULL == mudstate.pIQueryControl)
+    if (nullptr == mudstate.pIQueryControl)
     {
         notify_quiet(executor, T("Query server is not available."));
         return;
@@ -1203,7 +1201,7 @@ void do_query
         ATTR *pattr;
 
         if (!(  parse_attrib(executor, dbref_attr, &thing, &pattr)
-             && NULL != pattr))
+             && nullptr != pattr))
         {
             notify_quiet(executor, T("No match."));
             return;
@@ -1218,7 +1216,7 @@ void do_query
         UTF8 *pQuery = dbname_query;
         UTF8 *pDBName = parse_to(&pQuery, '/', 0);
 
-        if (NULL == pQuery)
+        if (nullptr == pQuery)
         {
             notify(executor, T("QUERY: No Query."));
             return;
@@ -1325,7 +1323,7 @@ static void ShowPsLine(BQUE *tmp)
     {
         for (int i = 0; i < tmp->nargs; i++)
         {
-            if (tmp->env[i] != NULL)
+            if (tmp->env[i] != nullptr)
             {
                 safe_str(T("; Arg"), bufp, &bp);
                 safe_chr((UTF8)(i + '0'), bufp, &bp);

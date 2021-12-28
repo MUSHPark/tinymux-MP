@@ -1,4 +1,4 @@
-# Makefile for TinyMUX 2.12
+# Makefile for TinyMUX 2.13
 #
 # Search for the text 'CONFIGURATION SECTION' and make any changes needed
 # there.
@@ -11,7 +11,7 @@ BIN = ../game/bin
 CC = @CC@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
-LIBS = @LIBS@ @FIRANLIBS@
+LIBS = @LIBS@
 
 .SUFFIXES: .cpp
 
@@ -55,13 +55,6 @@ MEMORY_BASED = @MEMORY_BASED@
 #
 STUB_SLAVE = @STUB_SLAVE@
 STUBLIBS   =  # -ldbi
-
-# Firan MUX. By default, this is off. This can be turned on by running
-# configure with --enable-firanmux. Firan MUX modifications are necessary
-# in order to run Firan's database.  Typically, --enable-memorybased is also
-# necessary.
-#
-FIRANMUX    = @FIRANMUX@
 
 # SQL support.  This optionally provides an inline sql() function which links
 # to a MySQL database, providing softcode compatibility with the SQL support
@@ -244,7 +237,7 @@ depend: $(ALLSRC) unsplit
 	mv .depend~ .depend
 
 realclean:
-	-rm -f *.o a.out core gmon.out dbconvert config.status config.log netmux netmux~ @DYNAMICLIB_TARGET@ @DYNAMICLIB_TARGET@~ slave @STUBSLAVE_TARGET@ Makefile modules/*.so tools/announce
+	-rm -f *.o a.out core gmon.out dbconvert config.status config.log netmux netmux~ @DYNAMICLIB_TARGET@ @DYNAMICLIB_TARGET@~ slave @STUBSLAVE_TARGET@ autoconf.h Makefile
 
 clean:
 	-rm -f *.o a.out core gmon.out warn.log config.status config.log netmux~ @DYNAMICLIB_TARGET@~

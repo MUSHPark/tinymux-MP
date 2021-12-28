@@ -1,8 +1,6 @@
 /*! \file mudconf.h
  * \brief Definitions of global state and configuration structures.
  *
- * $Id$
- *
  */
 
 #ifndef __CONF_H
@@ -218,9 +216,6 @@ struct confdata
     UTF8    fixed_home_msg[128];    /* Message displayed when going home and FIXED */
     UTF8    fixed_tel_msg[128]; /* Message displayed when teleporting and FIXED */
     UTF8    postdump_msg[256];  /* Message displayed after @dump-ing */
-#ifdef FIRANMUX
-    UTF8    immobile_msg[128];  /* Message displayed to immobile players */
-#endif // FIRANMUX
 
     UTF8    sql_server[128];
     UTF8    sql_user[128];

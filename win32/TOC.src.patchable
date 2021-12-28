@@ -1,7 +1,8 @@
-ALPHA
-ATTACK
-CHANGES
-MODULES
+ALPHA.md
+ATTACK.md
+CHANGES.md
+LOCAL.md
+MODULES.md
 REALITY
 REALITY.SETUP
 docs/BACKUPS
@@ -21,10 +22,9 @@ game/data/db_unload.bat
 game/startmux.wsf
 game/text/help.txt
 game/text/wizhelp.txt
-INSTALL
-LOCAL
-NOTES
-README
+INSTALL.md
+NOTES.md
+README.md
 readme.txt
 SGP
 SQL

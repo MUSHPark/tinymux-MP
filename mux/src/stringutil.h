@@ -1,8 +1,6 @@
 /*! \file stringutil.h
  * \brief string utilities.
  *
- * $Id$
- *
  */
 
 #ifndef STRINGUTIL_H
@@ -12,7 +10,7 @@
 
 inline bool isEmpty(__in_opt const UTF8 *p)
 {
-    return ((NULL == p) || ('\0' == p[0]));
+    return ((nullptr == p) || ('\0' == p[0]));
 }
 
 extern const bool mux_isprint_ascii[256];
@@ -116,7 +114,7 @@ inline size_t TrimPartialSequence(size_t n, __in_ecount(n) const UTF8 *p)
 //
 inline bool mux_isprint(__in const unsigned char *p)
 {
-    unsigned char iState = CL_PRINT_START_STATE;
+    unsigned short iState = CL_PRINT_START_STATE;
     do
     {
         unsigned char ch = *p++;
@@ -721,7 +719,7 @@ inline const string_desc *mux_tolower(__in const unsigned char *p, bool &bXor)
     if (TR_TOLOWER_DEFAULT == iState - TR_TOLOWER_ACCEPTING_STATES_START)
     {
         bXor = false;
-        return NULL;
+        return nullptr;
     }
     else
     {
@@ -780,7 +778,7 @@ inline const string_desc *mux_toupper(__in const unsigned char *p, bool &bXor)
     if (TR_TOUPPER_DEFAULT == iState - TR_TOUPPER_ACCEPTING_STATES_START)
     {
         bXor = false;
-        return NULL;
+        return nullptr;
     }
     else
     {
@@ -839,7 +837,7 @@ inline const string_desc *mux_totitle(__in const unsigned char *p, bool &bXor)
     if (TR_TOTITLE_DEFAULT == iState - TR_TOTITLE_ACCEPTING_STATES_START)
     {
         bXor = false;
-        return NULL;
+        return nullptr;
     }
     else
     {
@@ -898,7 +896,7 @@ inline const string_desc *mux_foldmatch(__in const unsigned char *p, bool &bXor)
     if (TR_FOLDMATCH_DEFAULT == iState - TR_FOLDMATCH_ACCEPTING_STATES_START)
     {
         bXor = false;
-        return NULL;
+        return nullptr;
     }
     else
     {
@@ -1894,11 +1892,11 @@ class mux_string
     // corresponds to strlen() in units of code points.
     //
     // If color is associated with the above code points, m_pcs will point
-    // to an array of ColorStates, otherwise, it is NULL.  When m_pcs is NULL,
-    // it is equivalent to every code point having CS_NORMAL color.  Each
-    // color state corresponds with a UTF-8 code point in m_autf[].  There is
-    // no guaranteed association between a position in m_autf[] and a position
-    // in m_pcs because UTF-8 code points are variable length.
+    // to an array of ColorStates, otherwise, it is nullptr.  When m_pcs is
+    // nullptr, it is equivalent to every code point having CS_NORMAL color.
+    // Each color state corresponds with a UTF-8 code point in m_autf[].
+    // There is no guaranteed association between a position in m_autf[] and
+    // a position in m_pcs because UTF-8 code points are variable length.
     //
     // Not all ColorStates in m_pcs may be used. m_ncs is between 0 and
     // LBUF_SIZE-1 inclusively and represents how many ColorStates are
@@ -2011,14 +2009,14 @@ public:
     bool search
     (
         const UTF8 *pPattern,
-        mux_cursor *iPos = NULL,
+        mux_cursor *iPos = nullptr,
         mux_cursor iStart = CursorMin,
         mux_cursor iEnd = CursorMax
     ) const;
     bool search
     (
         const mux_string &sPattern,
-        mux_cursor *iPos = NULL,
+        mux_cursor *iPos = nullptr,
         mux_cursor iStart = CursorMin,
         mux_cursor iEnd = CursorMax
     ) const;
@@ -2063,7 +2061,7 @@ public:
 
     static void operator delete(void *p)
     {
-        if (NULL != p)
+        if (nullptr != p)
         {
             free_string(p);
         }
@@ -2235,7 +2233,7 @@ public:
 
 inline bool isEmpty(const mux_string *p)
 {
-    return ((NULL == p) || (0 == p->length_byte()));
+    return ((nullptr == p) || (0 == p->length_byte()));
 }
 
 // String buffers are LBUF_SIZE, so maximum string length is LBUF_SIZE-1.
@@ -2255,7 +2253,7 @@ private:
 public:
 
     mux_words(const mux_string &sStr);
-    void export_WordColor(LBUF_OFFSET n, UTF8 *buff, UTF8 **bufc = NULL);
+    void export_WordColor(LBUF_OFFSET n, UTF8 *buff, UTF8 **bufc = nullptr);
     LBUF_OFFSET find_Words(const UTF8 *pDelim, bool bFavorEmptyList = false);
     void ignore_Word(LBUF_OFFSET n);
     mux_cursor wordBegin(LBUF_OFFSET n) const;

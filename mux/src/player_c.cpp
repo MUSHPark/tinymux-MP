@@ -1,8 +1,6 @@
 /*! \file player_c.cpp
  * \brief Player cache routines.
  *
- * $Id$
- *
  * Frequently-used items which appear on every object generally find a
  * home in the db[] structure managed in db.cpp.  However, there are a
  * few items related only to players which are still accessed
@@ -55,7 +53,7 @@ static PCACHE *pcache_head;
 void pcache_init(void)
 {
     pool_init(POOL_PCACHE, sizeof(PCACHE));
-    pcache_head = NULL;
+    pcache_head = nullptr;
 }
 
 /*! \brief Updates player cache items from the database.
@@ -180,7 +178,7 @@ void pcache_reload(dbref player)
 void pcache_trim(void)
 {
     PCACHE *pp = pcache_head;
-    PCACHE *pplast = NULL;
+    PCACHE *pplast = nullptr;
     while (pp)
     {
         PCACHE *ppnext = pp->next;

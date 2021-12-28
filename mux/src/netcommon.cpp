@@ -1,8 +1,6 @@
 /*! \file netcommon.cpp
  * \brief Network-independent networking routines.
  *
- * $Id$
- *
  * This file contains routines used by the networking code that do not
  * depend on the implementation of the networking code.  The network-specific
  * portions of the descriptor data structure are not used.
@@ -37,7 +35,7 @@ NAMETAB default_charset_nametab[] =
     {T("latin-2"),         7,       0,     CHARSET_LATIN2},
     {T("iso8859-1"),       9,       0,     CHARSET_LATIN1},
     {T("iso8859-2"),       9,       0,     CHARSET_LATIN2},
-    {(UTF8 *) NULL,        0,       0,     0}
+    {(UTF8 *) nullptr,     0,       0,     0}
 };
 
 #ifdef STUNNEL
@@ -111,7 +109,7 @@ void make_portlist(dbref player, dbref target, UTF8 *buff, UTF8 **bufc)
     DESC_ITER_CONN(d)
     {
         if (  d->player == target
-           && !ItemToList_AddInteger64(&itl, d->descriptor))
+           && !ItemToList_AddInteger64(&itl, d->socket))
         {
             break;
         }
@@ -137,12 +135,12 @@ void make_port_ulist(dbref player, UTF8 *buff, UTF8 **bufc)
             continue;
         }
 
-        // printf format: printf("%d:%d", d->player, d->descriptor);
+        // printf format: printf("%d:%d", d->player, d->socket);
         //
         UTF8 *p = tmp;
         p += mux_ltoa(d->player, p);
         *p++ = ':';
-        p += mux_i64toa(d->descriptor, p);
+        p += mux_i64toa(d->socket, p);
 
         size_t n = p - tmp;
         if (!ItemToList_AddStringLEN(&itl, n, tmp))
@@ -339,13 +337,13 @@ void clearstrings(DESC *d)
     if (d->output_prefix)
     {
         free_lbuf(d->output_prefix);
-        d->output_prefix = NULL;
+        d->output_prefix = nullptr;
     }
 
     if (d->output_suffix)
     {
         free_lbuf(d->output_suffix);
-        d->output_suffix = NULL;
+        d->output_suffix = nullptr;
     }
 }
 
@@ -371,12 +369,12 @@ static void add_to_output_queue(DESC *d, const UTF8 *b, size_t n)
 
     // Allocate an output buffer if needed.
     //
-    if (NULL == d->output_head)
+    if (nullptr == d->output_head)
     {
         tp = (TBLOCK *)MEMALLOC(OUTPUT_BLOCK_SIZE);
-        if (NULL != tp)
+        if (nullptr != tp)
         {
-            tp->hdr.nxt = NULL;
+            tp->hdr.nxt = nullptr;
             tp->hdr.start = tp->data;
             tp->hdr.end = tp->data;
             tp->hdr.nchars = 0;
@@ -431,9 +429,9 @@ static void add_to_output_queue(DESC *d, const UTF8 *b, size_t n)
             }
 
             tp = (TBLOCK *)MEMALLOC(OUTPUT_BLOCK_SIZE);
-            if (NULL != tp)
+            if (nullptr != tp)
             {
-                tp->hdr.nxt = NULL;
+                tp->hdr.nxt = nullptr;
                 tp->hdr.start = tp->data;
                 tp->hdr.end = tp->data;
                 tp->hdr.nchars = 0;
@@ -503,7 +501,7 @@ void queue_write_LEN(DESC *d, const UTF8 *b, size_t n)
         // option.
         //
         TBLOCK *tp = d->output_head;
-        if (NULL == tp)
+        if (nullptr == tp)
         {
             STARTLOG(LOG_PROBLEMS, "QUE", "WRITE");
             log_text(T("Flushing when output_head is null!"));
@@ -536,7 +534,7 @@ void queue_write_LEN(DESC *d, const UTF8 *b, size_t n)
                 STARTLOG(LOG_NET, "NET", "WRITE");
                 UTF8 *buf = alloc_lbuf("queue_write.LOG");
                 mux_sprintf(buf, LBUF_SIZE, T("[%u/%s] Output buffer overflow, %d chars discarded by "),
-                    d->descriptor, d->addr, tp->hdr.nchars);
+                    d->socket, d->addr, tp->hdr.nchars);
                 log_text(buf);
                 free_lbuf(buf);
                 if (d->flags & DS_CONNECTED)
@@ -547,12 +545,12 @@ void queue_write_LEN(DESC *d, const UTF8 *b, size_t n)
                 d->output_size -= tp->hdr.nchars;
                 d->output_head = tp->hdr.nxt;
                 d->output_lost += tp->hdr.nchars;
-                if (d->output_head == NULL)
+                if (d->output_head == nullptr)
                 {
-                    d->output_tail = NULL;
+                    d->output_tail = nullptr;
                 }
                 MEMFREE(tp);
-                tp = NULL;
+                tp = nullptr;
             }
         }
     }
@@ -570,7 +568,7 @@ void queue_write_LEN(DESC *d, const UTF8 *b, size_t n)
     // descriptor.
     //
     if (  !d->bConnectionDropped
-       && NULL != d->output_head
+       && nullptr != d->output_head
        && 0 == (d->output_head->hdr.flags & TBLK_FLAG_LOCKED))
     {
         d->bCallProcessOutputLater = true;
@@ -723,8 +721,8 @@ void freeqs(DESC *d)
         MEMFREE(tb);
         tb = tnext;
     }
-    d->output_head = NULL;
-    d->output_tail = NULL;
+    d->output_head = nullptr;
+    d->output_tail = nullptr;
 
     cb = d->input_head;
     while (cb)
@@ -734,16 +732,16 @@ void freeqs(DESC *d)
         cb = cnext;
     }
 
-    d->input_head = NULL;
-    d->input_tail = NULL;
+    d->input_head = nullptr;
+    d->input_tail = nullptr;
 
     if (d->raw_input)
     {
         free_lbuf(d->raw_input);
     }
-    d->raw_input = NULL;
+    d->raw_input = nullptr;
 
-    d->raw_input_at = NULL;
+    d->raw_input_at = nullptr;
     d->nOption = 0;
     d->raw_input_state    = NVT_IS_NORMAL;
     for (int i = 0; i < 256; i++)
@@ -757,7 +755,7 @@ void freeqs(DESC *d)
     if (d->ttype)
     {
         MEMFREE(d->ttype);
-        d->ttype = NULL;
+        d->ttype = nullptr;
     }
     d->height = 24;
     d->width = 78;
@@ -771,9 +769,9 @@ void desc_addhash(DESC *d)
 {
     dbref player = d->player;
     DESC *hdesc = (DESC *)hashfindLEN(&player, sizeof(player), &mudstate.desc_htab);
-    if (hdesc == NULL)
+    if (hdesc == nullptr)
     {
-        d->hashnext = NULL;
+        d->hashnext = nullptr;
         hashaddLEN(&player, sizeof(player), d, &mudstate.desc_htab);
     }
     else
@@ -790,15 +788,15 @@ void desc_addhash(DESC *d)
 static void desc_delhash(DESC *d)
 {
     dbref player = d->player;
-    DESC *last = NULL;
+    DESC *last = nullptr;
     DESC *hdesc = (DESC *)hashfindLEN(&player, sizeof(player), &mudstate.desc_htab);
-    while (hdesc != NULL)
+    while (hdesc != nullptr)
     {
         if (d == hdesc)
         {
-            if (last == NULL)
+            if (last == nullptr)
             {
-                if (d->hashnext == NULL)
+                if (d->hashnext == nullptr)
                 {
                     hashdeleteLEN(&player, sizeof(player), &mudstate.desc_htab);
                 }
@@ -816,7 +814,7 @@ static void desc_delhash(DESC *d)
         last = hdesc;
         hdesc = hdesc->hashnext;
     }
-    d->hashnext = NULL;
+    d->hashnext = nullptr;
 }
 
 void welcome_user(DESC *d)
@@ -833,8 +831,8 @@ void welcome_user(DESC *d)
 
 void save_command(DESC *d, CBLK *command)
 {
-    command->hdr.nxt = NULL;
-    if (d->input_tail == NULL)
+    command->hdr.nxt = nullptr;
+    if (d->input_tail == nullptr)
     {
         d->input_head = command;
 
@@ -858,15 +856,15 @@ static void set_userstring(UTF8 **userstring, const UTF8 *command)
 
     if (!*command)
     {
-        if (*userstring != NULL)
+        if (*userstring != nullptr)
         {
             free_lbuf(*userstring);
-            *userstring = NULL;
+            *userstring = nullptr;
         }
     }
     else
     {
-        if (*userstring == NULL)
+        if (*userstring == nullptr)
         {
             *userstring = alloc_lbuf("set_userstring");
         }
@@ -1142,8 +1140,8 @@ static void announce_connect(dbref player, DESC *d)
         wait_que(player, player, player, AttrTrace(aflags, 0), false, lta,
             NOTHING, 0,
             buf,
-            0, NULL,
-            NULL);
+            0, nullptr,
+            nullptr);
     }
     if (mudconf.master_room != NOTHING)
     {
@@ -1154,8 +1152,8 @@ static void announce_connect(dbref player, DESC *d)
             wait_que(mudconf.master_room, player, player, AttrTrace(aflags, 0),
                 false, lta, NOTHING, 0,
                 buf,
-                0, NULL,
-                NULL);
+                0, nullptr,
+                nullptr);
         }
         DOLIST(obj, Contents(mudconf.master_room))
         {
@@ -1165,8 +1163,8 @@ static void announce_connect(dbref player, DESC *d)
                 wait_que(obj, player, player, AttrTrace(aflags, 0), false, lta,
                     NOTHING, 0,
                     buf,
-                    0, NULL,
-                    NULL);
+                    0, nullptr,
+                    nullptr);
             }
         }
     }
@@ -1186,8 +1184,8 @@ static void announce_connect(dbref player, DESC *d)
                 wait_que(zone, player, player, AttrTrace(aflags, 0), false,
                     lta, NOTHING, 0,
                     buf,
-                    0, NULL,
-                    NULL);
+                    0, nullptr,
+                    nullptr);
             }
             break;
 
@@ -1204,8 +1202,8 @@ static void announce_connect(dbref player, DESC *d)
                     wait_que(obj, player, player, AttrTrace(aflags, 0), false,
                         lta, NOTHING, 0,
                         buf,
-                        0, NULL,
-                        NULL);
+                        0, nullptr,
+                        nullptr);
                 }
             }
             break;
@@ -1245,13 +1243,8 @@ void announce_disconnect(dbref player, DESC *d, const UTF8 *reason)
         num++;
     }
 
-#ifdef FIRANMUX
-    // Modified so that %# would be the dbref of the object which @booted you,
-    //  if such is the case.
-#else
     dbref temp = mudstate.curr_enactor;
     mudstate.curr_enactor = player;
-#endif
     dbref loc = Location(player);
 
     if (num < 2)
@@ -1305,19 +1298,11 @@ void announce_disconnect(dbref player, DESC *d, const UTF8 *reason)
         atr_pget_str_LEN(buf, player, A_ADISCONNECT, &aowner, &aflags, &nLen);
         if (nLen)
         {
-#if defined(FIRANMUX)
-            wait_que(player, player, mudstate.curr_enactor,
-                AttrTrace(aflags, 0), false, lta, NOTHING, 0,
-                buf,
-                1, &reason,
-                NULL);
-#else
             wait_que(player, player, player, AttrTrace(aflags, 0), false,
                 lta, NOTHING, 0,
                 buf,
                 1, &reason,
-                NULL);
-#endif // FIRANMUX
+                nullptr);
         }
         if (mudconf.master_room != NOTHING)
         {
@@ -1328,8 +1313,8 @@ void announce_disconnect(dbref player, DESC *d, const UTF8 *reason)
                 wait_que(mudconf.master_room, player, player,
                     AttrTrace(aflags, 0), false, lta, NOTHING, 0,
                     buf,
-                    0, NULL,
-                    NULL);
+                    0, nullptr,
+                    nullptr);
             }
             DOLIST(obj, Contents(mudconf.master_room))
             {
@@ -1340,8 +1325,8 @@ void announce_disconnect(dbref player, DESC *d, const UTF8 *reason)
                     wait_que(obj, player, player, AttrTrace(aflags, 0), false,
                         lta, NOTHING, 0,
                         buf,
-                        0, NULL,
-                        NULL);
+                        0, nullptr,
+                        nullptr);
                 }
             }
         }
@@ -1361,8 +1346,8 @@ void announce_disconnect(dbref player, DESC *d, const UTF8 *reason)
                     wait_que(zone, player, player, AttrTrace(aflags, 0),
                         false, lta, NOTHING, 0,
                         buf,
-                        0, NULL,
-                        NULL);
+                        0, nullptr,
+                        nullptr);
                 }
                 break;
 
@@ -1379,8 +1364,8 @@ void announce_disconnect(dbref player, DESC *d, const UTF8 *reason)
                         wait_que(obj, player, player, AttrTrace(aflags, 0),
                             false, lta, NOTHING, 0,
                             buf,
-                            0, NULL,
-                            NULL);
+                            0, nullptr,
+                            nullptr);
                     }
                 }
                 break;
@@ -1436,14 +1421,12 @@ void announce_disconnect(dbref player, DESC *d, const UTF8 *reason)
         free_mbuf(mbuf);
     }
 
-#if !defined(FIRANMUX)
     mudstate.curr_enactor = temp;
-#endif // FIRANMUX
     desc_delhash(d);
 
     local_disconnect(player, num);
     ServerEventsSinkNode *p = g_pServerEventsSinkListHead;
-    while (NULL != p)
+    while (nullptr != p)
     {
         p->pSink->disconnect(player, num);
         p = p->pNext;
@@ -1473,7 +1456,7 @@ int boot_by_port(SOCKET port, bool bGod, const UTF8 *message)
     int count = 0;
     DESC_SAFEITER_ALL(d, dnext)
     {
-        if (  d->descriptor == port
+        if (  d->socket == port
            && (  bGod
               || !(d->flags & DS_CONNECTED)
               || !God(d->player)))
@@ -1536,10 +1519,10 @@ static DESC *find_least_idle(dbref target)
     CLinearTimeAbsolute ltaNewestLastTime;
 
     DESC *d;
-    DESC *dLeastIdle = NULL;
+    DESC *dLeastIdle = nullptr;
     DESC_ITER_PLAYER(target, d)
     {
-        if (  NULL == dLeastIdle
+        if (  nullptr == dLeastIdle
            || ltaNewestLastTime < d->last_time)
         {
             dLeastIdle = d;
@@ -1552,7 +1535,7 @@ static DESC *find_least_idle(dbref target)
 int fetch_height(dbref target)
 {
     DESC *d = find_least_idle(target);
-    if (NULL != d)
+    if (nullptr != d)
     {
         return d->height;
     }
@@ -1562,7 +1545,7 @@ int fetch_height(dbref target)
 int fetch_width(dbref target)
 {
     DESC *d = find_least_idle(target);
-    if (NULL != d)
+    if (nullptr != d)
     {
         return d->width;
     }
@@ -1578,7 +1561,7 @@ int fetch_idle(dbref target)
     ltaNow.GetUTC();
 
     DESC *d = find_least_idle(target);
-    if (NULL != d)
+    if (nullptr != d)
     {
         CLinearTimeDelta ltdResult;
         ltdResult = ltaNow - d->last_time;
@@ -1591,13 +1574,13 @@ int fetch_idle(dbref target)
 }
 
 // ---------------------------------------------------------------------------
-// find_oldest: Return descriptor with the oldeset connected_at (or NULL if
+// find_oldest: Return descriptor with the oldeset connected_at (or nullptr if
 // not logged in).
 //
 void find_oldest(dbref target, DESC *dOldest[2])
 {
-    dOldest[0] = NULL;
-    dOldest[1] = NULL;
+    dOldest[0] = nullptr;
+    dOldest[1] = nullptr;
 
     DESC *d;
     bool bFound = false;
@@ -1759,8 +1742,8 @@ void check_events(void)
             {
                 if (H_Daily(thing))
                 {
-                    did_it(Owner(thing), thing, 0, NULL, 0, NULL, A_DAILY, 0,
-                        NULL, 0);
+                    did_it(Owner(thing), thing, 0, nullptr, 0, nullptr, A_DAILY, 0,
+                        nullptr, 0);
                     break;
                 }
             }
@@ -1821,7 +1804,7 @@ static void dump_users(DESC *e, const UTF8 *match, int key)
 
         if (!*match)
         {
-            match = NULL;
+            match = nullptr;
         }
     }
 
@@ -2037,7 +2020,7 @@ static void dump_users(DESC *e, const UTF8 *match, int key)
                     NameField,
                     pTimeStamp1,
                     pTimeStamp2,
-                    d->descriptor,
+                    d->socket,
                     d->input_size, d->input_lost,
                     d->input_tot,
                     d->output_size, d->output_lost,
@@ -2085,9 +2068,6 @@ static const UTF8 *DumpInfoTable[] =
 #if defined(DEPRECATED)
     T("DEPRECATED"),
 #endif
-#if defined(FIRANMUX)
-    T("FIRANMUX"),
-#endif
 #if defined(MEMORY_BASED)
     T("MEMORY_BASED"),
 #endif
@@ -2100,21 +2080,21 @@ static const UTF8 *DumpInfoTable[] =
 #if defined(WOD_REALMS)
     T("WOD_REALMS"),
 #endif
-    (UTF8 *)NULL
+    (UTF8 *)nullptr
 };
 
 static void dump_info(DESC *arg_desc)
 {
     size_t nDumpInfoTable = 0;
     while (  nDumpInfoTable < sizeof(DumpInfoTable)/sizeof(DumpInfoTable[0])
-          && NULL != DumpInfoTable[nDumpInfoTable])
+          && nullptr != DumpInfoTable[nDumpInfoTable])
     {
         nDumpInfoTable++;
     }
 
     const UTF8 **LocalDumpInfoTable = local_get_info_table();
     size_t nLocalDumpInfoTable = 0;
-    while (NULL != LocalDumpInfoTable[nLocalDumpInfoTable])
+    while (nullptr != LocalDumpInfoTable[nLocalDumpInfoTable])
     {
         nLocalDumpInfoTable++;
     }
@@ -2204,7 +2184,7 @@ UTF8 *MakeCanonicalDoing(UTF8 *pDoing, size_t *pnValidDoing, bool *pbValidDoing)
 
     if (!pDoing)
     {
-        return NULL;
+        return nullptr;
     }
 
     static UTF8 szFittedDoing[SIZEOF_DOING_STRING+1];
@@ -2271,7 +2251,7 @@ void do_doing(dbref executor, dbref caller, dbref enactor, int eval, int key, UT
     else if (key == DOING_UNIQUE)
     {
         DESC *d;
-        DESC *dMax = NULL;
+        DESC *dMax = nullptr;
         CLinearTimeAbsolute ltaMax;
         DESC_ITER_PLAYER(executor, d)
         {
@@ -2336,7 +2316,7 @@ NAMETAB logout_cmdtable[] =
     {T("WHO"),           3,  CA_PUBLIC,  CMD_WHO},
     {T("PUEBLOCLIENT"), 12,  CA_PUBLIC,  CMD_PUEBLOCLIENT},
     {T("INFO"),          4,  CA_PUBLIC,  CMD_INFO},
-    {NULL,               0,          0,         0}
+    {nullptr,            0,          0,         0}
 };
 
 void init_logout_cmdtab(void)
@@ -2359,7 +2339,7 @@ static void failconn(const UTF8 *logcode, const UTF8 *logtype, const UTF8 *logre
 {
     STARTLOG(LOG_LOGIN | LOG_SECURITY, logcode, "RJCT");
     UTF8 *buff = alloc_mbuf("failconn.LOG");
-    mux_sprintf(buff, MBUF_SIZE, T("[%u/%s] %s rejected to "), d->descriptor, d->addr, logtype);
+    mux_sprintf(buff, MBUF_SIZE, T("[%u/%s] %s rejected to "), d->socket, d->addr, logtype);
     log_text(buff);
     free_mbuf(buff);
     if (player != NOTHING)
@@ -2473,7 +2453,7 @@ static bool check_connect(DESC *d, UTF8 *msg)
                     return false;
                 }
 
-                if ((p = Guest.Create(d)) == NULL)
+                if ((p = Guest.Create(d)) == nullptr)
                 {
                     free_lbuf(command);
                     free_lbuf(user);
@@ -2517,7 +2497,7 @@ static bool check_connect(DESC *d, UTF8 *msg)
             queue_write(d, connect_fail);
             STARTLOG(LOG_LOGIN | LOG_SECURITY, "CON", "BAD");
             buff = alloc_lbuf("check_conn.LOG.bad");
-            mux_sprintf(buff, LBUF_SIZE, T("[%u/%s] Failed connect to \xE2\x80\x98%s\xE2\x80\x99"), d->descriptor, d->addr, user);
+            mux_sprintf(buff, LBUF_SIZE, T("[%u/%s] Failed connect to \xE2\x80\x98%s\xE2\x80\x99"), d->socket, d->addr, user);
             log_text(buff);
             free_lbuf(buff);
             ENDLOG;
@@ -2583,7 +2563,7 @@ static bool check_connect(DESC *d, UTF8 *msg)
             //
             STARTLOG(LOG_LOGIN, "CON", "LOGIN");
             buff = alloc_mbuf("check_conn.LOG.login");
-            mux_sprintf(buff, MBUF_SIZE, T("[%u/%s] Connected to "), d->descriptor, d->addr);
+            mux_sprintf(buff, MBUF_SIZE, T("[%u/%s] Connected to "), d->socket, d->addr);
             log_text(buff);
             log_name_and_loc(player);
             free_mbuf(buff);
@@ -2597,12 +2577,12 @@ static bool check_connect(DESC *d, UTF8 *msg)
             //
             DESC_ITER_PLAYER(player, d2)
             {
-                if (  NULL != d2->program_data
-                   && NULL == d->program_data)
+                if (  nullptr != d2->program_data
+                   && nullptr == d->program_data)
                 {
                     d->program_data = d2->program_data;
                 }
-                else if (NULL != d2->program_data)
+                else if (nullptr != d2->program_data)
                 {
                     // Enforce that all program_data pointers for this player
                     // are the same.
@@ -2641,7 +2621,7 @@ static bool check_connect(DESC *d, UTF8 *msg)
             local_connect(player, 0, num_con);
 
             ServerEventsSinkNode *pNode = g_pServerEventsSinkListHead;
-            while (NULL != pNode)
+            while (nullptr != pNode)
             {
                 pNode->pSink->connect(player, 0, num_con);
                 pNode = pNode->pNext;
@@ -2649,7 +2629,7 @@ static bool check_connect(DESC *d, UTF8 *msg)
 
             // If stuck in an @prog, show the prompt.
             //
-            if (NULL != d->program_data)
+            if (nullptr != d->program_data)
             {
                 queue_write_LEN(d, T(">\377\371"), 3);
             }
@@ -2767,7 +2747,7 @@ static bool check_connect(DESC *d, UTF8 *msg)
                 queue_write(d, T("\r\n"));
                 STARTLOG(LOG_SECURITY | LOG_PCREATES, "CON", "BAD");
                 buff = alloc_lbuf("check_conn.LOG.badcrea");
-                mux_sprintf(buff, LBUF_SIZE, T("[%u/%s] Create of \xE2\x80\x98%s\xE2\x80\x99 failed"), d->descriptor, d->addr, user);
+                mux_sprintf(buff, LBUF_SIZE, T("[%u/%s] Create of \xE2\x80\x98%s\xE2\x80\x99 failed"), d->socket, d->addr, user);
                 log_text(buff);
                 free_lbuf(buff);
                 ENDLOG;
@@ -2777,7 +2757,7 @@ static bool check_connect(DESC *d, UTF8 *msg)
                 AddToPublicChannel(player);
                 STARTLOG(LOG_LOGIN | LOG_PCREATES, "CON", "CREA");
                 buff = alloc_mbuf("check_conn.LOG.create");
-                mux_sprintf(buff, MBUF_SIZE, T("[%u/%s] Created "), d->descriptor, d->addr);
+                mux_sprintf(buff, MBUF_SIZE, T("[%u/%s] Created "), d->socket, d->addr);
                 log_text(buff);
                 log_name(player);
                 free_mbuf(buff);
@@ -2794,7 +2774,7 @@ static bool check_connect(DESC *d, UTF8 *msg)
                 //
                 local_connect(player, 1, 0);
                 ServerEventsSinkNode *pNode = g_pServerEventsSinkListHead;
-                while (NULL != pNode)
+                while (nullptr != pNode)
                 {
                     pNode->pSink->connect(player, 1, 0);
                     pNode = pNode->pNext;
@@ -2809,7 +2789,7 @@ static bool check_connect(DESC *d, UTF8 *msg)
         STARTLOG(LOG_LOGIN | LOG_SECURITY, "CON", "BAD");
         buff = alloc_mbuf("check_conn.LOG.bad");
         msg[150] = '\0';
-        mux_sprintf(buff, MBUF_SIZE, T("[%u/%s] Failed connect: \xE2\x80\x98%s\xE2\x80\x99"), d->descriptor, d->addr, msg);
+        mux_sprintf(buff, MBUF_SIZE, T("[%u/%s] Failed connect: \xE2\x80\x98%s\xE2\x80\x99"), d->socket, d->addr, msg);
         log_text(buff);
         free_mbuf(buff);
         ENDLOG;
@@ -2857,18 +2837,7 @@ static void do_logged_out_internal(DESC *d, int key, const UTF8 *arg)
     case CMD_WHO:
     case CMD_DOING:
     case CMD_SESSION:
-
-#if defined(FIRANMUX)
-        if ((d->flags & DS_CONNECTED) == 0)
-        {
-            queue_string(d, T("This command is disabled on login."));
-            queue_write_LEN(d, T("\r\n"), 2);
-        }
-        else
-#endif // FIRANMUX
-        {
-            dump_users(d, arg, key);
-        }
+        dump_users(d, arg, key);
         break;
 
     case CMD_PREFIX:
@@ -2948,35 +2917,35 @@ void do_command(DESC *d, UTF8 *command)
             if (mudstate.global_regs[i])
             {
                 RegRelease(mudstate.global_regs[i]);
-                mudstate.global_regs[i] = NULL;
+                mudstate.global_regs[i] = nullptr;
             }
         }
 
 #if defined(STUB_SLAVE)
         mudstate.iRow = RS_TOP;
-        if (NULL != mudstate.pResultsSet)
+        if (nullptr != mudstate.pResultsSet)
         {
             mudstate.pResultsSet->Release();
-            mudstate.pResultsSet = NULL;
+            mudstate.pResultsSet = nullptr;
         }
 #endif // STUB_SLAVE
 
         CLinearTimeAbsolute ltaBegin;
         ltaBegin.GetUTC();
-        MuxAlarm.Set(mudconf.max_cmdsecs);
+        alarm_clock.set(mudconf.max_cmdsecs);
 
         UTF8 *log_cmdbuf = process_command(d->player, d->player, d->player,
-            0, true, command, NULL, 0);
+            0, true, command, nullptr, 0);
 
         CLinearTimeAbsolute ltaEnd;
         ltaEnd.GetUTC();
-        if (MuxAlarm.bAlarmed)
+        if (alarm_clock.alarmed)
         {
             notify(d->player, T("GAME: Expensive activity abbreviated."));
             halt_que(d->player, NOTHING);
             s_Flags(d->player, FLAG_WORD1, Flags(d->player) | HALT);
         }
-        MuxAlarm.Clear();
+        alarm_clock.clear();
 
         CLinearTimeDelta ltd = ltaEnd - ltaBegin;
         if (ltd > mudconf.rpt_cmdsecs)
@@ -3251,7 +3220,7 @@ void do_command(DESC *d, UTF8 *command)
     // Look up the command in the logged-out command table.
     //
     NAMETAB *cp = (NAMETAB *)hashfindLEN(command, iArg, &mudstate.logout_cmd_htab);
-    if (cp == NULL)
+    if (cp == nullptr)
     {
         // Not in the logged-out command table, so maybe a connect attempt.
         //
@@ -3327,16 +3296,16 @@ void logged_out1(dbref executor, dbref caller, dbref enactor, int eval, int key,
     // used connection.
     //
     DESC *d;
-    DESC *dLatest = NULL;
+    DESC *dLatest = nullptr;
     DESC_ITER_PLAYER(executor, d)
     {
-        if (  dLatest == NULL
+        if (  dLatest == nullptr
            || dLatest->last_time < d->last_time)
         {
             dLatest = d;
         }
     }
-    if (dLatest != NULL)
+    if (dLatest != nullptr)
     {
         do_logged_out_internal(dLatest, key, arg);
     }
@@ -3346,7 +3315,7 @@ void logged_out0(dbref executor, dbref caller, dbref enactor, int eval, int key)
 {
     UNUSED_PARAMETER(eval);
 
-    logged_out1(executor, caller, enactor, 0, key, (UTF8 *)"", NULL, 0);
+    logged_out1(executor, caller, enactor, 0, key, (UTF8 *)"", nullptr, 0);
 }
 
 void Task_ProcessCommand(void *arg_voidptr, int arg_iInteger)
@@ -3371,11 +3340,11 @@ void Task_ProcessCommand(void *arg_voidptr, int arg_iInteger)
                 }
                 else
                 {
-                    d->input_tail = NULL;
+                    d->input_tail = nullptr;
                 }
                 d->input_size -= strlen((char *)t->cmd);
                 d->last_time.GetUTC();
-                if (d->program_data != NULL)
+                if (d->program_data != nullptr)
                 {
                     handle_prog(d, t->cmd);
                 }
@@ -3486,7 +3455,7 @@ FUNCTION(fun_doing)
         DESC *d;
         DESC_ITER_CONN(d)
         {
-            if (d->descriptor == s)
+            if (d->socket == s)
             {
                 bFound = true;
                 break;
@@ -3555,7 +3524,7 @@ FUNCTION(fun_host)
         SOCKET s = mux_atol(fargs[0]);
         DESC_ITER_CONN(d)
         {
-            if (d->descriptor == s)
+            if (d->socket == s)
             {
                 bFound = true;
                 break;
@@ -3651,7 +3620,7 @@ FUNCTION(fun_siteinfo)
         SOCKET s = mux_atol(fargs[0]);
         DESC_ITER_CONN(d)
         {
-            if (d->descriptor == s)
+            if (d->socket == s)
             {
                 bFound = true;
                 break;
@@ -3843,7 +3812,7 @@ CLinearTimeAbsolute fetch_logouttime(dbref target)
 
 mux_subnets::mux_subnets()
 {
-    msnRoot = NULL;
+    msnRoot = nullptr;
 }
 
 mux_subnets::~mux_subnets()
@@ -3854,9 +3823,9 @@ mux_subnets::~mux_subnets()
 mux_subnet_node::mux_subnet_node(mux_subnet *msn_arg, unsigned long ulControl_arg)
 {
     msn = msn_arg;
-    pnLeft = NULL;
-    pnInside = NULL;
-    pnRight = NULL;
+    pnLeft = nullptr;
+    pnInside = nullptr;
+    pnRight = nullptr;
     ulControl = ulControl_arg;
 }
 
@@ -3870,13 +3839,13 @@ mux_subnet_node::~mux_subnet_node()
 
 void mux_subnets::insert(mux_subnet_node **msnRoot, mux_subnet_node *msn_arg)
 {
-    if (NULL == *msnRoot)
+    if (nullptr == *msnRoot)
     {
         *msnRoot = msn_arg;
         return;
     }
 
-    mux_subnet::Comparison ct = (*msnRoot)->msn->CompareTo(msn_arg->msn);
+    mux_subnet::Comparison ct = (*msnRoot)->msn->compare_to(msn_arg->msn);
     switch (ct)
     {
     case mux_subnet::kLessThan:
@@ -3920,8 +3889,8 @@ void mux_subnets::insert(mux_subnet_node **msnRoot, mux_subnet_node *msn_arg)
             msn_arg->pnInside = *msnRoot;
             msn_arg->pnLeft = (*msnRoot)->pnLeft;
             msn_arg->pnRight = (*msnRoot)->pnRight;
-            (*msnRoot)->pnLeft = NULL;
-            (*msnRoot)->pnRight = NULL;
+            (*msnRoot)->pnLeft = nullptr;
+            (*msnRoot)->pnRight = nullptr;
             *msnRoot = msn_arg;
         }
         break;
@@ -3934,12 +3903,12 @@ void mux_subnets::insert(mux_subnet_node **msnRoot, mux_subnet_node *msn_arg)
 
 void mux_subnets::search(mux_subnet_node *msnRoot, MUX_SOCKADDR *msa, unsigned long *pulInfo)
 {
-    if (NULL == msnRoot)
+    if (nullptr == msnRoot)
     {
         return;
     }
 
-    mux_subnet::Comparison ct = msnRoot->msn->CompareTo(msa);
+    mux_subnet::Comparison ct = msnRoot->msn->compare_to(msa);
     switch (ct)
     {
     case mux_subnet::kLessThan:
@@ -4009,7 +3978,7 @@ mux_subnet_node *mux_subnets::rotr(mux_subnet_node *msnRoot)
 
 mux_subnet_node *mux_subnets::rollallr(mux_subnet_node *msnRoot)
 {
-    if (NULL != msnRoot->pnLeft)
+    if (nullptr != msnRoot->pnLeft)
     {
         msnRoot->pnLeft = rollallr(msnRoot->pnLeft);
         msnRoot = rotr(msnRoot);
@@ -4019,7 +3988,7 @@ mux_subnet_node *mux_subnets::rollallr(mux_subnet_node *msnRoot)
 
 mux_subnet_node *mux_subnets::joinlr(mux_subnet_node *a, mux_subnet_node *b)
 {
-    if (NULL == b)
+    if (nullptr == b)
     {
         return a;
     }
@@ -4030,11 +3999,11 @@ mux_subnet_node *mux_subnets::joinlr(mux_subnet_node *a, mux_subnet_node *b)
 
 mux_subnet_node *mux_subnets::remove(mux_subnet_node *msnRoot, mux_subnet *msn_arg)
 {
-    if (NULL == msnRoot)
+    if (nullptr == msnRoot)
     {
-        return NULL;
+        return nullptr;
     }
-    mux_subnet::Comparison ct = msnRoot->msn->CompareTo(msn_arg);
+    mux_subnet::Comparison ct = msnRoot->msn->compare_to(msn_arg);
     switch (ct)
     {
     case mux_subnet::kLessThan:
@@ -4045,7 +4014,7 @@ mux_subnet_node *mux_subnets::remove(mux_subnet_node *msnRoot, mux_subnet *msn_a
         {
             mux_subnet_node *x = msnRoot;
             delete msnRoot->pnInside;
-            msnRoot->pnInside = NULL;
+            msnRoot->pnInside = nullptr;
             msnRoot = joinlr(msnRoot->pnLeft, msnRoot->pnRight);
             delete x;
         }
@@ -4057,7 +4026,7 @@ mux_subnet_node *mux_subnets::remove(mux_subnet_node *msnRoot, mux_subnet *msn_a
 
     case mux_subnet::kContainedBy:
         delete msnRoot;
-        msnRoot = NULL;
+        msnRoot = nullptr;
         break;
 
     case mux_subnet::kGreaterThan:
@@ -4155,7 +4124,7 @@ static struct access_keyword
 
 void mux_subnets::listinfo(dbref player, UTF8 *sLine, UTF8 *sAddress, UTF8 *sControl, mux_subnet_node *p)
 {
-    if (NULL == p)
+    if (nullptr == p)
     {
         return;
     }
