@@ -1,8 +1,6 @@
 /*! \file funceval.cpp
  * \brief MUX function handlers.
  *
- * $Id$
- *
  * This file began as a place to put function handlers ported from other
  * MU* servers, but has also become home to miscellaneous new functions.
  * These handlers include side-effect functions, comsys / mail functions,
@@ -252,39 +250,8 @@ FUNCTION(fun_link)
     {
         return;
     }
-    do_link(executor, caller, enactor, eval, 0, 2, fargs[0], fargs[1], NULL, 0);
+    do_link(executor, caller, enactor, eval, 0, 2, fargs[0], fargs[1], nullptr, 0);
 }
-
-#if defined(FIRANMUX)
-FUNCTION(fun_setparent)
-{
-    UNUSED_PARAMETER(nfargs);
-    UNUSED_PARAMETER(cargs);
-    UNUSED_PARAMETER(ncargs);
-
-    if (check_command(executor, T("@parent"), buff, bufc))
-    {
-        return;
-    }
-    do_parent(executor, caller, enactor, eval, 0, 2, fargs[0], fargs[1], NULL, 0);
-}
-
-FUNCTION(fun_setname)
-{
-    UNUSED_PARAMETER(nfargs);
-    UNUSED_PARAMETER(cargs);
-    UNUSED_PARAMETER(ncargs);
-
-    if (  !fargs[0]
-       || !fargs[1]
-       || check_command(executor, T("@name"), buff, bufc))
-    {
-        return;
-    }
-    do_name(executor, caller, enactor, eval, 0, 2, fargs[0], fargs[1], NULL, 0);
-}
-
-#endif // FIRANMUX
 
 FUNCTION(fun_trigger)
 {
@@ -296,7 +263,7 @@ FUNCTION(fun_trigger)
     {
         return;
     }
-    do_trigger(executor, caller, enactor, eval, TRIG_QUIET, fargs[0], fargs+1, nfargs-1, NULL, 0);
+    do_trigger(executor, caller, enactor, eval, TRIG_QUIET, fargs[0], fargs+1, nfargs-1, nullptr, 0);
 }
 
 FUNCTION(fun_wipe)
@@ -309,7 +276,7 @@ FUNCTION(fun_wipe)
     {
         return;
     }
-    do_wipe(executor, caller, enactor, eval, 0, fargs[0], NULL, 0);
+    do_wipe(executor, caller, enactor, eval, 0, fargs[0], nullptr, 0);
 }
 
 FUNCTION(fun_tel)
@@ -343,7 +310,7 @@ FUNCTION(fun_tel)
         }
     }
 
-    do_teleport(executor, caller, enactor, eval, key, 2, fargs[0], fargs[1], NULL, 0);
+    do_teleport(executor, caller, enactor, eval, key, 2, fargs[0], fargs[1], nullptr, 0);
 }
 
 FUNCTION(fun_pemit)
@@ -389,7 +356,7 @@ FUNCTION(fun_emit)
     {
         return;
     }
-    do_say(executor, caller, enactor, 0, SAY_EMIT, fargs[0], NULL, 0);
+    do_say(executor, caller, enactor, 0, SAY_EMIT, fargs[0], nullptr, 0);
 }
 
 FUNCTION(fun_remit)
@@ -417,7 +384,7 @@ FUNCTION(fun_cemit)
     {
         return;
     }
-    do_cemit(executor, caller, enactor, eval, 0, nfargs, fargs[0], fargs[1], NULL, 0);
+    do_cemit(executor, caller, enactor, eval, 0, nfargs, fargs[0], fargs[1], nullptr, 0);
 }
 
 // ------------------------------------------------------------------------
@@ -463,7 +430,7 @@ FUNCTION(fun_create)
         {
             local_data_create(thing);
             ServerEventsSinkNode *p = g_pServerEventsSinkListHead;
-            while (NULL != p)
+            while (nullptr != p)
             {
                 p->pSink->data_create(thing);
                 p = p->pNext;
@@ -485,7 +452,7 @@ FUNCTION(fun_create)
             s_Exits(executor, thing);
             local_data_create(thing);
             ServerEventsSinkNode *p = g_pServerEventsSinkListHead;
-            while (NULL != p)
+            while (nullptr != p)
             {
                 p->pSink->data_create(thing);
                 p = p->pNext;
@@ -520,7 +487,7 @@ FUNCTION(fun_create)
             s_Home(thing, new_home(executor));
             local_data_create(thing);
             ServerEventsSinkNode *p = g_pServerEventsSinkListHead;
-            while (NULL != p)
+            while (nullptr != p)
             {
                 p->pSink->data_create(thing);
                 p = p->pNext;
@@ -542,7 +509,7 @@ FUNCTION(fun_destroy)
     {
         return;
     }
-    do_destroy(executor, caller, enactor, 0, DEST_ONE, fargs[0], NULL, 0);
+    do_destroy(executor, caller, enactor, 0, DEST_ONE, fargs[0], nullptr, 0);
 }
 
 FUNCTION(fun_textfile)
@@ -1046,7 +1013,7 @@ FUNCTION(fun_localize)
 {
     UNUSED_PARAMETER(nfargs);
 
-    reg_ref **preserve = NULL;
+    reg_ref **preserve = nullptr;
     preserve = PushRegisters(MAX_GLOBAL_REGS);
     save_global_regs(preserve);
 
@@ -1196,8 +1163,8 @@ FUNCTION(fun_columns)
         return;
     }
 
-    mux_string *sStr = NULL;
-    mux_words *words = NULL;
+    mux_string *sStr = nullptr;
+    mux_words *words = nullptr;
     try
     {
         sStr = new mux_string(cp);
@@ -1209,8 +1176,8 @@ FUNCTION(fun_columns)
     }
 
     LBUF_OFFSET nWords;
-    if (  NULL == sStr
-       || NULL == words
+    if (  nullptr == sStr
+       || nullptr == words
        || 0 == (nWords = words->find_Words(sep.str)))
     {
         delete sStr;
@@ -1286,8 +1253,8 @@ FUNCTION(fun_table)
 
     // Check argument numbers, assign values and defaults if necessary.
     //
-    UTF8 *pPaddingStart = NULL;
-    UTF8 *pPaddingEnd = NULL;
+    UTF8 *pPaddingStart = nullptr;
+    UTF8 *pPaddingEnd = nullptr;
     if (nfargs == 6 && *fargs[5])
     {
         pPaddingStart = strip_color(fargs[5]);
@@ -1703,7 +1670,7 @@ FUNCTION(fun_strtrunc)
         return;
     }
 
-    mux_string *sStr = NULL;
+    mux_string *sStr = nullptr;
     try
     {
         sStr = new mux_string(fargs[0]);
@@ -1713,7 +1680,7 @@ FUNCTION(fun_strtrunc)
         ; // Nothing.
     }
 
-    if (NULL == sStr)
+    if (nullptr == sStr)
     {
         return;
     }
@@ -1797,7 +1764,7 @@ FUNCTION(fun_mail)
     }
     else if (nfargs == 1)
     {
-        if (!is_integer(fargs[0], NULL))
+        if (!is_integer(fargs[0], nullptr))
         {
             // Handle the case of wanting to count the number of
             // messages.
@@ -1968,128 +1935,6 @@ FUNCTION(fun_mailsubj)
     }
 }
 
-#ifdef FIRANMUX
-// This function can take one of three formats:
-//
-//  1.  mailj(num)  --> returns message <num> for privs.
-//  2.  mailj(executor)  --> returns number of messages for <executor>.
-//  3.  mailj(executor, num)  --> returns message <num> for <executor>.
-//
-// It can now take one more format:
-//
-//  4.  mailj() --> returns number of messages for executor.
-//
-FUNCTION(fun_mailj)
-{
-    if (!mudconf.have_mailer)
-    {
-        safe_str(T("#-1 MAILER DISABLED."), buff, bufc);
-        return;
-    }
-
-    dbref playerask;
-    int num;
-    struct mail *mp;
-
-    if (  0 == nfargs
-       || '\0' == fargs[0][0])
-    {
-        int cnt = 0;
-        MailList ml(executor);
-        for (mp = ml.FirstItem(); !ml.IsEnd(); mp = ml.NextItem())
-        {
-            cnt++;
-        }
-        safe_ltoa(cnt, buff, bufc);
-        return;
-    }
-    else if (1 == nfargs)
-    {
-        if (!is_integer(fargs[0], NULL))
-        {
-            // Handle the case of wanting to count the number of messages.
-            //
-            playerask = lookup_player(executor, fargs[0], 1);
-            if (NOTHING == playerask)
-            {
-                safe_str(T("#-1 NO SUCH PLAYER"), buff, bufc);
-            }
-            else if (  executor == playerask
-                    || Wizard(executor))
-            {
-                int uc = 0;
-                int rc = 0;
-                int cc = 0;
-                MailList ml(playerask);
-                for (mp = ml.FirstItem(); !ml.IsEnd(); mp = ml.NextItem())
-                {
-                    if (Read(mp))
-                    {
-                        rc++;
-                    }
-                    else
-                    {
-                        uc++;
-                    }
-
-                    if (Cleared(mp))
-                    {
-                        cc++;
-                    }
-                }
-                safe_tprintf_str(buff, bufc, T("%d %d %d"), rc, uc, cc);
-            }
-            else
-            {
-                safe_noperm(buff, bufc);
-            }
-            return;
-        }
-        else
-        {
-            playerask = executor;
-            num = mux_atol(fargs[0]);
-        }
-    }
-    else
-    {
-        playerask = lookup_player(executor, fargs[0], 1);
-        if (NOTHING == playerask)
-        {
-            safe_str(T("#-1 NO SUCH PLAYER"), buff, bufc);
-            return;
-        }
-        else if (  executor == playerask
-                || God(executor))
-        {
-            num = mux_atol(fargs[1]);
-        }
-        else
-        {
-            safe_noperm(buff, bufc);
-            return;
-        }
-    }
-
-    if (  num < 1
-       || !isPlayer(playerask))
-    {
-        safe_str(T("#-1 NO SUCH MESSAGE"), buff, bufc);
-        return;
-    }
-
-    mp = mail_fetch(playerask, num);
-    if (mp)
-    {
-        safe_str(MessageFetch(mp->number), buff, bufc);
-    }
-    else
-    {
-        safe_str(T("#-1 NO SUCH MESSAGE"), buff, bufc);
-    }
-}
-#endif // FIRANMUX
-
 // This function can take these formats:
 //
 //  1) mailfrom(<num>)
@@ -2196,7 +2041,7 @@ static void hasattr_handler(UTF8 *buff, UTF8 **bufc, dbref executor, UTF8 *fargs
             else
             {
                 const UTF8 *tbuf = atr_get_raw(thing, pattr->number);
-                result = (tbuf != NULL);
+                result = (tbuf != nullptr);
             }
         }
     }
@@ -2284,7 +2129,7 @@ static void default_handler(UTF8 *buff, UTF8 **bufc, dbref executor,
             case DEFAULT_EDEFAULT:
                 mux_exec(atr_gotten, LBUF_SIZE-1, buff, bufc, thing, executor, executor,
                      AttrTrace(aflags, EV_FIGNORE|EV_EVAL),
-                     NULL, 0);
+                     nullptr, 0);
                 break;
 
             case DEFAULT_UDEFAULT:
@@ -2520,8 +2365,8 @@ FUNCTION(fun_elements)
 
     // Turn the first list into an array.
     //
-    mux_string *sStr = NULL;
-    mux_words *words = NULL;
+    mux_string *sStr = nullptr;
+    mux_words *words = nullptr;
     try
     {
         sStr  = new mux_string(fargs[0]);
@@ -2532,8 +2377,8 @@ FUNCTION(fun_elements)
         ; // Nothing.
     }
 
-    if (  NULL == sStr
-       || NULL == words)
+    if (  nullptr == sStr
+       || nullptr == words)
     {
         delete sStr;
         delete words;

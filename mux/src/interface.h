@@ -1,8 +1,6 @@
 /*! \file interface.h
  * \brief Declarations relating to network connections.
  *
- * $Id$
- *
  */
 
 #include "copyright.h"
@@ -156,10 +154,11 @@ struct prog_data
 typedef struct descriptor_data DESC;
 struct descriptor_data
 {
-  CLinearTimeAbsolute connected_at;
-  CLinearTimeAbsolute last_time;
+  SOCKET socket;
 
-  SOCKET descriptor;
+#ifdef UNIX_SSL
+  SSL *ssl_session;
+#endif
 
 #if defined(WINDOWS_NETWORKING)
   // these are for the Windows NT TCP/IO
@@ -171,6 +170,9 @@ struct descriptor_data
   bool bConnectionShutdown;       // true if connection has been shutdown
   bool bCallProcessOutputLater;   // Does the socket need priming for output.
 #endif // WINDOWS_NETWORKING
+
+  CLinearTimeAbsolute connected_at;
+  CLinearTimeAbsolute last_time;
 
   int flags;
   int retries_left;
@@ -209,23 +211,19 @@ struct descriptor_data
   struct descriptor_data *next;
   struct descriptor_data **prev;
 
-  mux_sockaddr address;   /* added 3/6/90 SCG */
+  mux_sockaddr address;
 
   UTF8 addr[51];
   UTF8 username[11];
   UTF8 doing[SIZEOF_DOING_STRING];
-
-#ifdef UNIX_SSL
-  SSL *ssl_session;
-#endif
 };
 
-int HimState(DESC *d, unsigned char chOption);
-int UsState(DESC *d, unsigned char chOption);
-void EnableHim(DESC *d, unsigned char chOption);
-void DisableHim(DESC *d, unsigned char chOption);
-void EnableUs(DESC *d, unsigned char chOption);
-void DisableUs(DESC *d, unsigned char chOption);
+int him_state(DESC *d, unsigned char chOption);
+int us_state(DESC *d, unsigned char chOption);
+void enable_him(DESC *d, unsigned char chOption);
+void disable_him(DESC *d, unsigned char chOption);
+void enable_us(DESC *d, unsigned char chOption);
+void disable_us(DESC *d, unsigned char chOption);
 
 /* flags in the flag field */
 #define DS_CONNECTED    0x0001      // player is connected.
@@ -258,27 +256,22 @@ typedef struct
 extern bool initialize_ssl();
 extern void shutdown_ssl();
 
-extern PortInfo aMainGamePorts[MAX_LISTEN_PORTS * 2];
+extern PortInfo main_game_ports[MAX_LISTEN_PORTS * 2];
 #else
-extern PortInfo aMainGamePorts[MAX_LISTEN_PORTS];
+extern PortInfo main_game_ports[MAX_LISTEN_PORTS];
 #endif
-extern int      nMainGamePorts;
-
-/* from the net interface */
-
-extern int mux_socket_write(DESC *d, const char* buffer, int nBytes, int flags);
-extern int mux_socket_read(DESC *d, char* buffer, int nBytes, int flags);
+extern int      num_main_game_ports;
 
 extern void emergency_shutdown(void);
 extern void shutdownsock(DESC *, int);
 extern void SetupPorts(int *pnPorts, PortInfo aPorts[], IntArray *pia, IntArray *piaSSL, const UTF8 *ip_address);
 extern void shovechars(int nPorts, PortInfo aPorts[]);
-void process_output(void *, int);
+void process_output(DESC *, int);
 #if defined(HAVE_WORKING_FORK)
 extern void dump_restart_db(void);
 #endif // HAVE_WORKING_FORK
 
-extern void BuildSignalNamesTable(void);
+extern void build_signal_names_table(void);
 extern void set_signals(void);
 
 // From netcommon.cpp
@@ -341,13 +334,13 @@ extern dbref connect_player(UTF8 *, UTF8 *, UTF8 *, UTF8 *, UTF8 *);
 
 #define DESC_SAFEITER_PLAYER(p,d,n) \
     for (d=(DESC *)hashfindLEN(&(p), sizeof(p), &mudstate.desc_htab), \
-            n=((d!=NULL) ? d->hashnext : NULL); \
+            n=((d!=nullptr) ? d->hashnext : nullptr); \
          d; \
-         d=n,n=((n!=NULL) ? n->hashnext : NULL))
+         d=n,n=((n!=nullptr) ? n->hashnext : nullptr))
 #define DESC_SAFEITER_ALL(d,n) \
-    for (d=descriptor_list,n=((d!=NULL) ? d->next : NULL); \
+    for (d=descriptor_list,n=((d!=nullptr) ? d->next : nullptr); \
          d; \
-         d=n,n=((n!=NULL) ? n->next : NULL))
+         d=n,n=((n!=nullptr) ? n->next : nullptr))
 
 // From bsd.cpp.
 //
@@ -386,7 +379,7 @@ extern long DebugTotalSockets;
 #if defined(WINDOWS_NETWORKING)
 extern long DebugTotalThreads;
 extern long DebugTotalSemaphores;
-extern HANDLE hGameProcess;
+extern HANDLE game_process_handle;
 typedef int __stdcall FGETNAMEINFO(const SOCKADDR *pSockaddr, socklen_t SockaddrLength, PCHAR pNodeBuffer,
     DWORD NodeBufferSize, PCHAR pServiceBuffer, DWORD ServiceBufferSize, INT Flags);
 typedef int __stdcall FGETADDRINFO(PCSTR pNodeName, PCSTR pServiceName, const ADDRINFOA *pHints,

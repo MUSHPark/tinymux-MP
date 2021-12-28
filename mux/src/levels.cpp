@@ -1,8 +1,6 @@
 /*! \file levels.cpp
  * \brief Reality levels stuff.
  *
- * $Id$
- *
  * See mux/REALITY.SETUP in the distribution.
  */
 
@@ -22,7 +20,7 @@
 RLEVEL RxLevel(dbref thing)
 {
     const UTF8 *buff = atr_get_raw(thing, A_RLEVEL);
-    if (  NULL == buff
+    if (  nullptr == buff
        || strlen((char *)buff) != 17)
     {
         switch (Typeof(thing))
@@ -53,7 +51,7 @@ RLEVEL RxLevel(dbref thing)
 RLEVEL TxLevel(dbref thing)
 {
     const UTF8 *buff = atr_get_raw(thing, A_RLEVEL);
-    if (  NULL == buff
+    if (  nullptr == buff
        || strlen((char *)buff) != 17)
     {
         switch (Typeof(thing))
@@ -499,7 +497,7 @@ DESC_INFO *desclist_match(dbref player, dbref thing)
         if ((match & rldef->value) == rldef->value)
         {
             ATTR *at = atr_str(rldef->attr);
-            if (NULL != at)
+            if (nullptr != at)
             {
                 bool bFound = false;
                 for (int j = 0; j < descbuffer.n; j++)
@@ -534,7 +532,7 @@ UTF8 *get_rlevel_desc
     int aflags;
     UTF8 *buff = alloc_lbuf("get_rlevel_desc.");
     UTF8 *bp = buff;;
-    reg_ref **preserve = NULL;
+    reg_ref **preserve = nullptr;
     bool need_pres = false;
     bool bFirst = true;
 
@@ -557,7 +555,7 @@ UTF8 *get_rlevel_desc
 
             mux_exec(d, LBUF_SIZE-1, buff, &bp, thing, thing, player,
                 AttrTrace(aflags, EV_EVAL|EV_FIGNORE|EV_TOP),
-                NULL, 0);
+                nullptr, 0);
 
             if (!bFirst)
             {
@@ -587,7 +585,7 @@ UTF8 *get_rlevel_desc
 
             mux_exec(d, LBUF_SIZE-1, buff, &bp, thing, thing, player,
                 AttrTrace(aflags, EV_EVAL|EV_FIGNORE|EV_TOP),
-                NULL, 0);
+                nullptr, 0);
             *bp = '\0';
 
             *piDescUsed = A_DESC;
@@ -626,7 +624,7 @@ void did_it_rlevel
     int   nargs
 )
 {
-    if (MuxAlarm.bAlarmed)
+    if (alarm_clock.alarmed)
     {
         return;
     }
@@ -637,7 +635,7 @@ void did_it_rlevel
     int i;
     bool found_a_desc;
 
-    reg_ref **preserve = NULL;
+    reg_ref **preserve = nullptr;
     bool need_pres = false;
 
     // Message to player.

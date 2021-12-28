@@ -1,8 +1,6 @@
 /*! \file config.h
  * \brief Compile-time options.
  *
- * $Id$
- *
  * Some of these might be okay to change, others aren't really
  * options, and some are portability-related.
  */
@@ -159,6 +157,10 @@ extern int getdtablesize(void);
 
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
+#else // HAVE_FCNTL_H
+#ifdef HAVE_SYS_FCNTL_H
+#include <sys/fcntl.h>
+#endif // HAVE_SYS_FCNTL_H
 #endif
 
 #ifdef HAVE_SYS_WAIT_H
@@ -257,10 +259,6 @@ extern char *sys_errlist[];
 #endif // HAVE_SYS_TYPES_H
 
 #include <stdio.h>
-
-#ifdef HAVE_SYS_FCNTL_H
-#include <sys/fcntl.h>
-#endif // HAVE_SYS_FCNTL_H
 
 #ifndef EXTENDED_STDIO_DCLS
 extern int    fprintf(FILE *, const char *, ...);
@@ -690,10 +688,10 @@ class mux_sockaddr
 public:
     mux_sockaddr();
     mux_sockaddr(const sockaddr *);
-    void SetAddress(mux_addr *ma);
+    void set_address(mux_addr *ma);
 
     unsigned short Family() const;
-    unsigned short Port() const;
+    unsigned short port() const;
     void ntop(UTF8 *sAddress, size_t len) const;
 
     struct sockaddr *sa();
@@ -704,8 +702,8 @@ public:
     const struct sockaddr_in6 *sai6ro() const;
     size_t salen() const;
     size_t maxaddrlen() const;
-    void GetAddress(struct in_addr *ia) const;
-    void GetAddress(struct in6_addr *ia6) const;
+    void get_address(struct in_addr *ia) const;
+    void get_address(struct in6_addr *ia6) const;
 
     bool operator==(const mux_sockaddr &it) const;
 
@@ -720,7 +718,7 @@ private:
 #if defined(HAVE_SOCKADDR_IN6)
         struct sockaddr_in6  sai6;
 #endif
-    } u;
+    } u{};
 };
 
 // Abstract
@@ -752,11 +750,11 @@ public:
         kGreaterThan
     };
 
-    mux_subnet() : m_iaBase(NULL), m_iaMask(NULL), m_iaEnd(NULL) { }
+    mux_subnet() : m_iaBase(nullptr), m_iaMask(nullptr), m_iaEnd(nullptr) { }
     ~mux_subnet();
     int getFamily() const { return m_iaBase->getFamily(); }
-    Comparison CompareTo(mux_subnet *msn) const;
-    Comparison CompareTo(MUX_SOCKADDR *msa) const;
+    Comparison compare_to(mux_subnet *msn) const;
+    Comparison compare_to(MUX_SOCKADDR *msa) const;
     bool listinfo(UTF8 *sAddress, int *pnLeadingBits) const;
 
 protected:
@@ -765,10 +763,10 @@ protected:
     mux_addr *m_iaEnd;
     int      m_iLeadingBits;
 
-    friend mux_subnet *ParseSubnet(UTF8 *str, dbref player, UTF8 *cmd);
+    friend mux_subnet *parse_subnet(UTF8 *str, dbref player, UTF8 *cmd);
 };
 
-mux_subnet *ParseSubnet(UTF8 *str, dbref player, UTF8 *cmd);
+mux_subnet *parse_subnet(UTF8 *str, dbref player, UTF8 *cmd);
 
 // IPv4
 //
@@ -778,7 +776,7 @@ class mux_in_addr : public mux_addr
 public:
     mux_in_addr() { }
     mux_in_addr(struct in_addr *ia);
-    mux_in_addr(in_addr_t ulBits);
+    mux_in_addr(in_addr_t bits);
     virtual ~mux_in_addr();
 
     int getFamily() const { return AF_INET; }
@@ -790,7 +788,7 @@ public:
     bool operator==(const mux_addr &it) const;
 
 private:
-    struct in_addr m_ia;
+    struct in_addr m_ia{};
 
     friend class mux_sockaddr;
 };
@@ -799,7 +797,7 @@ private:
 // IPv6
 //
 #if defined(HAVE_IN6_ADDR)
-class mux_in6_addr : mux_addr
+class mux_in6_addr : public mux_addr
 {
 public:
     mux_in6_addr() { }
@@ -815,7 +813,7 @@ public:
     bool operator==(const mux_addr &it) const;
 
 private:
-    struct in6_addr m_ia6;
+    struct in6_addr m_ia6{};
 
     friend class mux_sockaddr;
 };

@@ -1,8 +1,6 @@
 /*! \file funmath.cpp
  * \brief MUX math function handlers.
  *
- * $Id$
- *
  */
 
 #include "copyright.h"
@@ -456,7 +454,7 @@ FUNCTION(fun_lmax)
 
         int n = 0;
         UTF8 *cp = trim_space_sep(fargs[0], sep);
-        while (NULL != cp)
+        while (nullptr != cp)
         {
             UTF8 *curr = split_token(&cp, sep);
             double tval = mux_atof(curr);
@@ -512,7 +510,7 @@ FUNCTION(fun_lmin)
 
         int n = 0;
         UTF8 *cp = trim_space_sep(fargs[0], sep);
-        while (NULL != cp)
+        while (nullptr != cp)
         {
             UTF8 *curr = split_token(&cp, sep);
             double tval = mux_atof(curr);
@@ -587,8 +585,8 @@ FUNCTION(fun_shl)
     UNUSED_PARAMETER(cargs);
     UNUSED_PARAMETER(ncargs);
 
-    if (  is_integer(fargs[0], NULL)
-       && is_integer(fargs[1], NULL))
+    if (  is_integer(fargs[0], nullptr)
+       && is_integer(fargs[1], nullptr))
     {
         long  b = mux_atol(fargs[1]);
         if (0 <= b)
@@ -617,8 +615,8 @@ FUNCTION(fun_shr)
     UNUSED_PARAMETER(cargs);
     UNUSED_PARAMETER(ncargs);
 
-    if (  is_integer(fargs[0], NULL)
-       && is_integer(fargs[1], NULL))
+    if (  is_integer(fargs[0], nullptr)
+       && is_integer(fargs[1], nullptr))
     {
         long  b = mux_atol(fargs[1]);
         if (0 <= b)
@@ -1304,7 +1302,7 @@ FUNCTION(fun_vmag)
         return;
     }
 
-    UTF8 **v1 = NULL;
+    UTF8 **v1 = nullptr;
     try
     {
         v1 = new UTF8 *[LBUF_SIZE/2];
@@ -1314,7 +1312,7 @@ FUNCTION(fun_vmag)
         ; // Nothing.
     }
 
-    if (NULL != v1)
+    if (nullptr != v1)
     {
         int n = list2arr(v1, LBUF_SIZE/2, fargs[0], sep);
 
@@ -1358,7 +1356,7 @@ FUNCTION(fun_vunit)
         return;
     }
 
-    UTF8 **v1 = NULL;
+    UTF8 **v1 = nullptr;
     try
     {
         v1 = new UTF8 *[LBUF_SIZE/2];
@@ -1368,7 +1366,7 @@ FUNCTION(fun_vunit)
         ; // Nothing.
     }
 
-    if (NULL != v1)
+    if (nullptr != v1)
     {
         int n = list2arr(v1, LBUF_SIZE/2, fargs[0], sep);
 
@@ -2066,7 +2064,7 @@ FUNCTION(fun_isint)
     UNUSED_PARAMETER(cargs);
     UNUSED_PARAMETER(ncargs);
 
-    safe_bool(is_integer(fargs[0], NULL), buff, bufc);
+    safe_bool(is_integer(fargs[0], nullptr), buff, bufc);
 }
 
 FUNCTION(fun_and)
@@ -2141,7 +2139,7 @@ FUNCTION(fun_cand)
 {
     bool val = true;
     UTF8 *temp = alloc_lbuf("fun_cand");
-    for (int i = 0; i < nfargs && val && !MuxAlarm.bAlarmed; i++)
+    for (int i = 0; i < nfargs && val && !alarm_clock.alarmed; i++)
     {
         UTF8 *bp = temp;
         mux_exec(fargs[i], LBUF_SIZE-1, temp, &bp, executor, caller, enactor,
@@ -2157,7 +2155,7 @@ FUNCTION(fun_cor)
 {
     bool val = false;
     UTF8 *temp = alloc_lbuf("fun_cor");
-    for (int i = 0; i < nfargs && !val && !MuxAlarm.bAlarmed; i++)
+    for (int i = 0; i < nfargs && !val && !alarm_clock.alarmed; i++)
     {
         UTF8 *bp = temp;
         mux_exec(fargs[i], LBUF_SIZE-1, temp, &bp, executor, caller, enactor,
@@ -2173,7 +2171,7 @@ FUNCTION(fun_candbool)
 {
     bool val = true;
     UTF8 *temp = alloc_lbuf("fun_candbool");
-    for (int i = 0; i < nfargs && val && !MuxAlarm.bAlarmed; i++)
+    for (int i = 0; i < nfargs && val && !alarm_clock.alarmed; i++)
     {
         UTF8 *bp = temp;
         mux_exec(fargs[i], LBUF_SIZE-1, temp, &bp, executor, caller, enactor,
@@ -2189,7 +2187,7 @@ FUNCTION(fun_corbool)
 {
     bool val = false;
     UTF8 *temp = alloc_lbuf("fun_corbool");
-    for (int i = 0; i < nfargs && !val && !MuxAlarm.bAlarmed; i++)
+    for (int i = 0; i < nfargs && !val && !alarm_clock.alarmed; i++)
     {
         UTF8 *bp = temp;
         mux_exec(fargs[i], LBUF_SIZE-1, temp, &bp, executor, caller, enactor,
@@ -2518,7 +2516,7 @@ void CSpellNum::SpellNum(const UTF8 *number, UTF8 *buff_arg, UTF8 **bufc_arg)
     }
     size_t nA = number - pA;
 
-    const UTF8 *pB  = NULL;
+    const UTF8 *pB  = nullptr;
     size_t nB = 0;
     if (*number == '.')
     {
@@ -2755,7 +2753,7 @@ FUNCTION(fun_band)
     UINT64 val = UINT64_MAX_VALUE;
     for (int i = 0; i < nfargs; i++)
     {
-        if (is_integer(fargs[i], NULL))
+        if (is_integer(fargs[i], nullptr))
         {
             val &= mux_atoi64(fargs[i]);
         }
@@ -2780,7 +2778,7 @@ FUNCTION(fun_bor)
     UINT64 val = 0;
     for (int i = 0; i < nfargs; i++)
     {
-        if (is_integer(fargs[i], NULL))
+        if (is_integer(fargs[i], nullptr))
         {
             val |= mux_atoi64(fargs[i]);
         }
@@ -2803,8 +2801,8 @@ FUNCTION(fun_bnand)
     UNUSED_PARAMETER(cargs);
     UNUSED_PARAMETER(ncargs);
 
-    if (  is_integer(fargs[0], NULL)
-       && is_integer(fargs[1], NULL))
+    if (  is_integer(fargs[0], nullptr)
+       && is_integer(fargs[1], nullptr))
     {
         INT64 a = mux_atoi64(fargs[0]);
         INT64 b = mux_atoi64(fargs[1]);
@@ -2828,7 +2826,7 @@ FUNCTION(fun_bxor)
     UINT64 val = 0;
     for (int i = 0; i < nfargs; i++)
     {
-        if (is_integer(fargs[i], NULL))
+        if (is_integer(fargs[i], nullptr))
         {
             val ^= mux_atoi64(fargs[i]);
         }
@@ -2861,7 +2859,7 @@ FUNCTION(fun_crc32)
 
 void safe_hex(UINT8 md[], size_t len, bool bUpper, __in UTF8 *buff, __deref_inout UTF8 **bufc)
 {
-    UTF8 *buf = NULL;
+    UTF8 *buf = nullptr;
     try
     {
         buf = new UTF8[(len * 2) + 1];
@@ -2871,7 +2869,7 @@ void safe_hex(UINT8 md[], size_t len, bool bUpper, __in UTF8 *buff, __deref_inou
         ; // Nothing.
     }
 
-    if (NULL == buf)
+    if (nullptr == buf)
     {
         return;
     }
@@ -2924,26 +2922,40 @@ FUNCTION(fun_digest)
     UNUSED_PARAMETER(ncargs);
 
 #ifdef UNIX_DIGEST
-    EVP_MD_CTX ctx;
+    EVP_MD_CTX *ctx;
+#if HAVE_EVP_MD_CTX_NEW
+    ctx = EVP_MD_CTX_new();
+#elif HAVE_EVP_MD_CTX_CREATE
+    ctx = EVP_MD_CTX_create();
+#else
+#error Need EVP_MD_CTX_new() or EVP_MD_CTX_create().
+#endif
 
     const EVP_MD *mp = EVP_get_digestbyname((const char *)fargs[0]);
-    if (NULL == mp)
+    if (nullptr == mp)
     {
         safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bufc);
         return;
     }
 
-    EVP_DigestInit(&ctx, mp);
+    EVP_DigestInit(ctx, mp);
 
     int i;
     for (i = 1; i < nfargs; i++)
     {
-        EVP_DigestUpdate(&ctx, fargs[i], strlen((const char *)fargs[i]));
+        EVP_DigestUpdate(ctx, fargs[i], strlen((const char *)fargs[i]));
     }
 
     unsigned int len = 0;
     UINT8 md[EVP_MAX_MD_SIZE];
-    EVP_DigestFinal(&ctx, md, &len);
+    EVP_DigestFinal(ctx, md, &len);
+#if HAVE_EVP_MD_CTX_NEW
+    EVP_MD_CTX_free(ctx);
+#elif HAVE_EVP_MD_CTX_CREATE
+    EVP_MD_CTX_destroy(ctx);
+#else
+#error Need EVP_MD_CTX_new() or EVP_MD_CTX_create().
+#endif
     safe_hex(md, len, true, buff, bufc);
 #else
     if (mux_stricmp(fargs[0], T("sha1")) == 0)

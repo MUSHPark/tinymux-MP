@@ -1,7 +1,6 @@
 /*! \file db_rw.cpp
  * \brief Flatfile implementation.
  *
- * $Id$
  */
 
 #include "copyright.h"
@@ -736,7 +735,7 @@ dbref db_read(FILE *f, int *db_format, int *db_version, int *db_flags)
                                && iAttr <= anum_alc_top)
                             {
                                 const char *pLatin1 = (char *)atr_get_raw(iObject, iAttr);
-                                if (NULL != pLatin1)
+                                if (nullptr != pLatin1)
                                 {
                                     size_t nUnicode;
                                     const UTF8 *pUnicode = ConvertToUTF8(pLatin1, &nUnicode);
@@ -897,7 +896,7 @@ dbref db_write(FILE *f, int format, int version)
     for (iAttr = A_USER_START; iAttr <= anum_alc_top; iAttr++)
     {
         vp = (ATTR *) anum_get(iAttr);
-        if (  vp != NULL
+        if (  vp != nullptr
            && !(vp->flags & AF_DELETED))
         {
             // Format is: "+A%d\n\"%d:%s\"\n", vp->number, vp->flags, vp->name

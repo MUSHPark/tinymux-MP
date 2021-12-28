@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([TinyMUX],[2.12],[tinymux@googlegroups.com])
+AC_INIT([TinyMUX],[2.13],[tinymux@googlegroups.com])
 AC_CONFIG_SRCDIR([game.cpp])
 AC_CONFIG_HEADERS([autoconf.h] [modules/autoconf.h] [tools/autoconf.h])
 
@@ -80,25 +80,6 @@ AC_ARG_ENABLE(
   ])
 AC_SUBST(STUB_SLAVE)
 AC_SUBST(STUBSLAVE_TARGET)
-
-AC_MSG_CHECKING(whether to enable Firan MUX)
-AC_ARG_ENABLE(
-  [firanmux],
-  AS_HELP_STRING([--enable-firanmux],[enable Firan MUX (default is NO)]),
-  [
-    if test "x$enableval" = "xno"; then
-      AC_MSG_RESULT(no)
-    else
-      FIRANMUX="-DFIRANMUX"
-      FIRANLIBS=""
-      AC_MSG_RESULT(yes)
-    fi
-  ],
-  [
-    AC_MSG_RESULT(no)
-  ])
-AC_SUBST(FIRANMUX)
-AC_SUBST(FIRANLIBS)
 
 AC_MSG_CHECKING(whether to enable inline MySQL)
 AC_ARG_ENABLE(
@@ -340,7 +321,7 @@ AC_PROG_CPP
 AC_CANONICAL_HOST
 AC_USE_SYSTEM_EXTENSIONS
 m4_include([m4/ax_cxx_compile_stdcxx.m4])
-AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
+AX_CXX_COMPILE_STDCXX([14], [noext], [mandatory])
 
 # Checks for libraries.
 #
@@ -456,6 +437,10 @@ AC_EGREP_HEADER(gettimeofday,sys/time.h, ,AC_DEFINE(NEED_GETTIMEOFDAY_DCL))
 else
 AC_EGREP_HEADER(gettimeofday,time.h, ,AC_DEFINE(NEED_GETTIMEOFDAY_DCL))
 fi
+save_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$save_CPPFLAGS $SQL_INCLUDE"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <mysql.h>]], [[int x = 1;]])],[AC_DEFINE([HAVE_MYSQL_H], [], [Define if mysql.h exists.])],[])
+CPPFLAGS="$save_CPPFLAGS"
 
 # Checks for typedefs, structures, and compiler characteristics.
 #
@@ -558,6 +543,7 @@ AC_FUNC_FORK
 AC_CHECK_FUNCS(crypt getdtablesize gethostbyaddr gethostbyname getnameinfo getaddrinfo inet_ntop inet_pton getpagesize getrusage gettimeofday)
 AC_CHECK_FUNCS(localtime_r nanosleep select setitimer setrlimit socket srandom tzset usleep log2)
 AC_CHECK_FUNCS(epoll_create epoll_ctl epoll_wait kqueue kevent)
+AC_CHECK_FUNCS(EVP_MD_CTX_create EVP_MD_CTX_new SHA_Init)
 AS_MESSAGE([checking for pread and pwrite...])
 AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <sys/types.h>
@@ -712,5 +698,5 @@ if test -c /dev/urandom; then
   AC_DEFINE([HAVE_DEV_URANDOM], [], [Define if the character special file /dev/urandom is present.])
 fi
 
-AC_CONFIG_FILES([modules/Makefile Makefile])
+AC_CONFIG_FILES([modules/Makefile tools/Makefile Makefile])
 AC_OUTPUT

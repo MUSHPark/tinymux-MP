@@ -1,8 +1,6 @@
 /*! \file alloc.h
  * \brief External definitions for memory allocation subsystem.
  *
- * $Id$
- *
  */
 
 #ifndef M_ALLOC_H
@@ -20,6 +18,7 @@
 #define POOL_STRING  9
 #define NUM_POOLS    10
 
+<<<<<<< HEAD
 #ifdef FIRANMUX
 #define LBUF_SIZE   24000   // Large
 #define GBUF_SIZE   2048    // Generic
@@ -33,10 +32,11 @@
 #define GBUF_SIZE   1024    // Generic
 #define MBUF_SIZE   400     // Medium
 #else
+=======
+>>>>>>> f3961001ac4da0a421fbd4f7a3616c0c501f81ff
 #define LBUF_SIZE   8000    // Large
 #define GBUF_SIZE   1024    // Generic
 #define MBUF_SIZE   400     // Medium
-#endif
 #define PBUF_SIZE   128     // Pathname
 #define SBUF_SIZE   64      // Small
 
