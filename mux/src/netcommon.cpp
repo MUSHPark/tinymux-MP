@@ -2698,7 +2698,7 @@ static bool check_connect(DESC *d, UTF8 *msg)
                 queue_write(d, T("\r\n"));
                 STARTLOG(LOG_SECURITY | LOG_PCREATES, "CON", "BAD");
                 buff = alloc_lbuf("check_conn.LOG.badcrea");
-                mux_sprintf(buff, LBUF_SIZE, T("[%u/%s] Create of \xE2\x80\x98%s\xE2\x80\x99 failed"), d->descriptor, d->addr, user);
+                mux_sprintf(buff, LBUF_SIZE, T("[%u/%s] Create of \xE2\x80\x98%s\xE2\x80\x99 failed"), d->socket, d->addr, user);
                 log_text(buff);
                 free_lbuf(buff);
                 ENDLOG;
@@ -2708,7 +2708,7 @@ static bool check_connect(DESC *d, UTF8 *msg)
                 AddToPublicChannel(player);
                 STARTLOG(LOG_LOGIN | LOG_PCREATES, "CON", "CREA");
                 buff = alloc_mbuf("check_conn.LOG.create");
-                mux_sprintf(buff, MBUF_SIZE, T("[%u/%s] Created "), d->descriptor, d->addr);
+                mux_sprintf(buff, MBUF_SIZE, T("[%u/%s] Created "), d->socket, d->addr);
                 log_text(buff);
                 log_name(player);
                 free_mbuf(buff);
@@ -3003,7 +3003,7 @@ void do_command(DESC *d, UTF8 *command)
           log_text(T("[DISABLED] "));
           log_text((UTF8*)s_buff);
        ENDLOG
-       sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [SSL DISABLED]", d->descriptor, addroutbuf, s_arg, s_arg);
+       sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [SSL DISABLED]", d->socket, addroutbuf, s_arg, s_arg);
        DESC_ITER_CONN(nd)
        {
            if (SiteMon(nd->player))
@@ -3043,9 +3043,9 @@ void do_command(DESC *d, UTF8 *command)
           mudconf.sconnect_reip = 0;
 
           if ( d->doing[0] != '\0' ) {
-             sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [BOOTED - HACKING]", d->descriptor, (char *)d->addr, (char *)d->doing, s_arg);
+             sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [BOOTED - HACKING]", d->socket, (char *)d->addr, (char *)d->doing, s_arg);
           } else {
-             sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [BOOTED - HACKING]", d->descriptor, (char *)d->addr, (char *)d->addr, s_arg);
+             sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [BOOTED - HACKING]", d->socket, (char *)d->addr, (char *)d->addr, s_arg);
           }
           DESC_ITER_CONN(nd)
           {
@@ -3099,7 +3099,7 @@ void do_command(DESC *d, UTF8 *command)
                    log_text(T("[FORBIDDEN] "));
                    log_text((UTF8*)s_buff);
                 ENDLOG
-                sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [FORBIDDEN]", d->descriptor, s_buff2, s_arg, s_arg);
+                sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [FORBIDDEN]", d->socket, s_buff2, s_arg, s_arg);
                 DESC_ITER_CONN(nd)
                 {
                     if (SiteMon(nd->player))
@@ -3127,7 +3127,7 @@ void do_command(DESC *d, UTF8 *command)
                       log_text(T("[OK] "));
                       log_text((UTF8*)s_buff);
                    ENDLOG
-                   sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [OK]", d->descriptor, s_buff2, s_sitetmp, s_arg);
+                   sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [OK]", d->socket, s_buff2, s_sitetmp, s_arg);
                    DESC_ITER_CONN(nd)
                    {
                        if (SiteMon(nd->player))
@@ -3147,7 +3147,7 @@ void do_command(DESC *d, UTF8 *command)
                       log_text(T("[REGITERED] "));
                       log_text((UTF8*)s_buff);
                    ENDLOG
-                   sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [REGISTERED]", d->descriptor, s_buff2, s_sitetmp, s_arg);
+                   sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [REGISTERED]", d->socket, s_buff2, s_sitetmp, s_arg);
                    DESC_ITER_CONN(nd)
                    {
                        if (SiteMon(nd->player))
@@ -3167,7 +3167,7 @@ void do_command(DESC *d, UTF8 *command)
                       log_text(T("[NOGUEST] "));
                       log_text((UTF8*)s_buff);
                    ENDLOG
-                   sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [NOGUEST]", d->descriptor, s_buff2, s_sitetmp, s_arg);
+                   sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [NOGUEST]", d->socket, s_buff2, s_sitetmp, s_arg);
                    DESC_ITER_CONN(nd)
                    {
                        if (SiteMon(nd->player))
@@ -3187,7 +3187,7 @@ void do_command(DESC *d, UTF8 *command)
                       log_text(T("[REGISTERED & NOGUEST] "));
                       log_text((UTF8*)s_buff);
                    ENDLOG
-                   sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [NOGUEST/REGISTERED]", d->descriptor, s_buff2, s_arg, s_arg);
+                   sprintf(s_buff, "SITEMON: [%d] SSL %.50s -> %.50s {%s} [NOGUEST/REGISTERED]", d->socket, s_buff2, s_arg, s_arg);
                    DESC_ITER_CONN(nd)
                    {
                        if (SiteMon(nd->player))

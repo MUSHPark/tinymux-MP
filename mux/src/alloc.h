@@ -34,6 +34,7 @@
 #define LBUF_SIZE   8000    // Large
 #define GBUF_SIZE   1024    // Generic
 #define MBUF_SIZE   400     // Medium
+#endif
 #define PBUF_SIZE   128     // Pathname
 #define SBUF_SIZE   64      // Small
 
