@@ -1752,7 +1752,7 @@ void check_events(void)
 
 }
 
-#define MAX_TRIMMED_NAME_LENGTH 16
+#define MAX_TRIMMED_NAME_LENGTH 31
 LBUF_OFFSET trimmed_name(dbref player, UTF8 cbuff[MBUF_SIZE], LBUF_OFFSET nMin, LBUF_OFFSET nMax, LBUF_OFFSET nPad)
 {
     mux_field nName = StripTabsAndTruncate(
@@ -1817,10 +1817,10 @@ static void dump_users(DESC *e, const UTF8 *match, int key)
     buf = alloc_mbuf("dump_users");
     if (key == CMD_SESSION)
     {
-        queue_write(e, T("                               "));
+        queue_write(e, T("                                    "));
         queue_write(e, T("     Characters Input----  Characters Output---\r\n"));
     }
-    queue_write(e, T("Player Name        On For Idle "));
+    queue_write(e, T("Player Name             On For Idle "));
     if (key == CMD_SESSION)
     {
         queue_write(e, T("Port Pend  Lost     Total  Pend  Lost     Total\r\n"));
@@ -1990,12 +1990,12 @@ static void dump_users(DESC *e, const UTF8 *match, int key)
             size_t vwNameField = strlen((char *)NameField);
             if (d->flags & DS_CONNECTED)
             {
-                vwNameField = trimmed_name(d->player, NameField, 13, MAX_TRIMMED_NAME_LENGTH, 1);
+                vwNameField = trimmed_name(d->player, NameField, 18, MAX_TRIMMED_NAME_LENGTH, 1);
             }
 
             // The width size allocated to the 'On For' field.
             //
-            size_t nOnFor = 25 - vwNameField;
+            size_t nOnFor = 30 - vwNameField;
 
             const UTF8 *pTimeStamp1 = time_format_1(ltdConnected.ReturnSeconds(), nOnFor);
             const UTF8 *pTimeStamp2 = time_format_2(ltdLastTime.ReturnSeconds());
